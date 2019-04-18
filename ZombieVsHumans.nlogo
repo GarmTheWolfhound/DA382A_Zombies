@@ -25,10 +25,8 @@ breed [ humans human ]
 
 ; ************* AGENT-SPECIFIC VARIABLES *********
 turtles-own []
-zombies-own [energy target]
-humans-own [latest-birth age vision]
 zombies-own [energy target speedcoefficient]
-humans-own [latest-birth age]
+humans-own [latest-birth age vision]
 ; ***************************
 
 
@@ -218,42 +216,31 @@ to move-zombies[State]
       if(target != nobody) [
         face target
         set-speed
-
+      ]
       ;;Only move if you have energy
 
-        ;;Check if zombie has a target otherwise set target to be the closest human
-        set target min-one-of humans in-radius vision-radius [distance myself]
-        if(target != nobody) [
-          face target
-        ]
-      if energy > 100 [
-          forward zombie-speed-max
-          set energy energy - 1
+      ;;Check if zombie has a target otherwise set target to be the closest human
+      set target min-one-of humans in-radius vision-radius [distance myself]
+      if(target != nobody) [
+        face target
+        set-speed
       ]
+
       if(target = nobody) [
         right random 45
         left random 45
         set-speed
-      if energy < 0 [
+        if energy < 1 [
           forward zombie-speed-min
+        ]
+
+        ;Show energy
+        show-energy
       ]
       release-zombie
-      ;Show energy
-      show-energy
-      if energy <= 100 and energy >= 0 [
-        forward speedcoefficient * ln(energy + 1) + zombie-speed-min
-        set energy energy - 1
-        if energy < 0 [
-          set energy 0
-        ]
-      ]
+      eat-human
 
-      ;;Show energy
-      ifelse show-energy?
-      [ set label energy ]
-      [ set label "" ]
     ]
-    eat-human
   ]
 end
 
@@ -275,34 +262,47 @@ end
 
 ;JOD
 to set-speed
-  if energy > 59 [
-    forward 0.6
-    set energy energy - 0.6
+  if energy > 100 [
+    forward zombie-speed-max
+    set energy energy - 1
   ]
-  if energy <= 50 [
-    forward 0.5
-    set energy energy - 0.5
+
+  if energy <= 100 and energy >= 0 [
+    forward speedcoefficient * ln(energy + 1) + zombie-speed-min
+    set energy energy - 1
+    if energy < 0 [
+      set energy 0
+    ]
   ]
-  if energy < 60 and energy > 40 [
-    forward energy / 100
-    set energy energy - (energy / 100)
-  ]
+  ;  if energy > 59 [
+  ;    forward 0.6
+  ;    set energy energy - 0.6
+  ;  ]
+  ;  if energy <= 50 [
+  ;    forward 0.5
+  ;    set energy energy - 0.5
+  ;  ]
+  ;  if energy < 60 and energy > 40 [
+  ;    forward energy / 100
+  ;    set energy energy - (energy / 100)
+  ;  ]
 
 end
 
 ;JOD
 to eat-human
   ask zombies [
-    if any? humans-here [
-      hatch-zombies 1 [
+    let hum one-of humans-here
+    if(hum != nobody)[
+      hatch-zombies 1[
+        ask hum [die]
         set shape "zombie"
         set size 3
         set energy energy-start-zombies
       ]
-      ask humans-here [die]
       set energy energy + zombies-energy-gain
       if energy > 100 [
-          set energy 100
+        set energy 100
       ]
     ]
   ]
@@ -345,7 +345,7 @@ end
 ; |3-digit|  Name
 ; |-------|--------------------------------------------
 ; |<JOD>  | Jake O´Donnell
-; | <SÄR> | Julian Wijkström
+; |<SÄR>  | Julian Wijkström
 ; |       |
 ; |       |
 ; |       |
@@ -424,7 +424,7 @@ initial-number-humans
 initial-number-humans
 0
 50
-11.0
+15.0
 1
 1
 NIL
@@ -439,7 +439,7 @@ initial-number-zombies
 initial-number-zombies
 1
 50
-11.0
+15.0
 1
 1
 NIL
@@ -454,7 +454,7 @@ zombies-energy-gain
 zombies-energy-gain
 0
 100
-20.0
+32.0
 1
 1
 NIL
@@ -479,6 +479,7 @@ PENS
 "Zombies" 1.0 0 -10899396 true "" "plot count zombies"
 "Women" 1.0 0 -2064490 true "" "plot count humans with [color = pink]"
 "Men" 1.0 0 -13345367 true "" "plot count humans with [color = blue]"
+"pen-3" 1.0 0 -7500403 true "" "plot count humans"
 
 SLIDER
 794
@@ -489,7 +490,7 @@ setup-age
 setup-age
 0
 100
-81.0
+0.0
 1
 1
 NIL
@@ -504,7 +505,7 @@ ticks-per-year
 ticks-per-year
 0
 100
-3.0
+0.0
 1
 1
 NIL
@@ -549,7 +550,7 @@ energy-start-zombies
 energy-start-zombies
 0
 200
-200.0
+100.0
 1
 1
 NIL
@@ -572,7 +573,7 @@ SWITCH
 258
 Show-energy?
 Show-energy?
-1
+0
 1
 -1000
 
@@ -622,7 +623,7 @@ zombie-speed-min
 zombie-speed-min
 0
 1
-0.2
+1.0
 0.01
 1
 NIL
@@ -637,7 +638,7 @@ zombie-speed-max
 zombie-speed-max
 0
 1
-0.7
+1.0
 0.01
 1
 NIL
