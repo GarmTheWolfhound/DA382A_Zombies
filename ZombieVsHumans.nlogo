@@ -11,7 +11,7 @@
 
 
 ; ************* GLOBAL VARIABLES *****************
-globals [age-counter]
+globals [age-counter timeOfDay]
 
 ; *****************************
 
@@ -26,7 +26,7 @@ breed [ humans human ]
 ; ************* AGENT-SPECIFIC VARIABLES *********
 turtles-own []
 zombies-own [energy target]
-humans-own [latest-birth age]
+humans-own [latest-birth age vision]
 ; ***************************
 
 
@@ -47,6 +47,7 @@ end
 to go
   live-humans
   live-zombies
+  set-night-day
   tick
 
   if count humans > 200 [stop]
@@ -124,8 +125,14 @@ end
 
 to move-humans ;MNM
   ask humans [
+    if(timeOfDay = "day") [
+      set vision 10
+    ]
+    if(timeOfDay = "night") [
+      set vision 5
+    ]
 
-    let zomb min-one-of zombies in-radius vision-radius [distance myself]
+    let zomb min-one-of zombies in-radius vision [distance myself]
     ifelse zomb != nobody [
       ;run away from zombie
       set heading towards zomb
@@ -175,12 +182,12 @@ end
 
 ; end setup zombie agents ----------------------------
 
+;JOD
 to move-zombies[State]
-  ;;State random tactics
+  ;State Step2 is used for first test. Zombies move in a random path with a 90
+  ;rotation radius, 45 right 45 left. Speed is determined by owned energy.
   if State = "Step2" [
     ask zombies [
-      ;;Random heading and move forward based on energy
-
       if energy > 0 [
         right random 45
         left random 45
@@ -193,51 +200,73 @@ to move-zombies[State]
         forward 0.6
       ]
       ;;Show energy
-      ifelse show-energy?
-      [ set label energy ]
-      [ set label "" ]
+      show-energy
     ]
     eat-human
   ]
 
-  ;;State Follow tactics
+  ;State Step3 is used for second test. Zombies follows a human that is in its visual radius defined by a slider in the UI.
+  ;While it sees the target it faces it and hunts it othervise it looks for a new target to hunt while moving in a random pattern to "trick" the humans.
+  ;Speed is determined by energy where min speed is defined as 0.5 steps forward and max is 1.
   if State = "Step3"[
     if not any? humans [stop]
     ask zombies [
-
-      ;;Only move if you have energy
-
-        ;;Check if zombie has a target otherwise set target to be the closest human
-        set target min-one-of humans in-radius vision-radius [distance myself]
-        if(target != nobody) [
-          face target
-        ]
-      if energy > 100 [
-          forward 1
-          set energy energy - 1
+      set target min-one-of humans in-radius vision-radius [distance myself]
+      if(target != nobody) [
+        face target
+        set-speed
       ]
-      if energy <= 40 [
-          forward 0.4
+      if(target = nobody) [
+        right random 45
+        left random 45
+        set-speed
       ]
-      if energy < 100 and energy > 40 [
-          forward energy / 100
-          set energy energy - 1
-      ]
-
-      ;;Show energy
-      ifelse show-energy?
-      [ set label energy ]
-      [ set label "" ]
+      release-zombie
+      ;Show energy
+      show-energy
     ]
     eat-human
+  ]
+end
+
+;JOD
+to show-energy
+  ifelse show-energy?
+      [ set label energy ]
+  [ set label "" ]
+end
+
+;JOD
+to release-zombie
+  let hum count humans in-radius 1
+  let zom count zombies in-radius 1
+  if(((hum /  zom) > 3) or ((hum /  zom) = 3)) [
+    ask zombies-here [die]
+  ]
+end
+
+;JOD
+to set-speed
+  if energy > 59 [
+    forward 0.6
+    set energy energy - 0.6
+  ]
+  if energy <= 50 [
+    forward 0.5
+    set energy energy - 0.5
+  ]
+  if energy < 60 and energy > 40 [
+    forward energy / 100
+    set energy energy - (energy / 100)
   ]
 
 end
 
+;JOD
 to eat-human
   ask zombies [
-    if any? other humans-here [
-      hatch-zombies count humans-here [
+    if any? humans-here [
+      hatch-zombies 1 [
         set shape "zombie"
         set size 3
         set energy energy-start-zombies
@@ -245,67 +274,29 @@ to eat-human
       ask humans-here [die]
       set energy energy + zombies-energy-gain
     ]
-    set target nobody
   ]
 end
 
+;JOD
+to set-night-day
+  let counter ticks mod 100
+  if (counter < 49) [
+    show "day"
+    set timeOfDay "day"
+  ]
+  if (counter > 50) [
+    show "night"
+    set timeOfDay "night"
+  ]
+end
 ; --zombie agents main function ----------------------
 to live-zombies
   ; <3-digit initial of programmer for each subfunction of the agent>
   move-zombies(Tactics)
 end
 ; end zombie agents main function -------------------
-;to setup-zombies
-;  create-zombies initial-number-zombies
-;  [
-;    set shape "zombie"
-;    set color red
-;    set size 3  ; easier to see
-;    setxy random-xcor random-ycor
-;    set energy random (2 * zombies-energy-gain)
-;  ]
-;end
-;; end setup zombie agents ----------------------------
-;
-;; --zombie agents main function ----------------------
-;to live-zombies
-;; <3-digit initial of programmer for each subfunction of the agent>
-;  ;TEMP TESTFUNCTIONS
-;  move-zombies ; MNM
-;  eat-humans
-;end
-;; end zombie agents main function --------------------
-;
-;; --zombie agents procedures/reporters ----------------
-;; <3-digit initial of programmer for each procedure>
-;to move-zombies ;temp. testfunction MNM
-;  ask zombies [
-;    set energy energy - 1
-;    right random 50
-;    left random 50
-;    if energy > 0 [ forward 1]
-;  ]
-;end
-;
-;to eat-humans
-;  ask zombies [
-;    let prey one-of humans-here
-;    if prey != nobody [
-;      ask prey [die]
-;      hatch 1 [
-;        set shape "zombie"
-;        set color red
-;        set size 3  ; easier to see
-;        set energy random (2 * zombies-energy-gain)
-;      ]
-;      set energy energy + zombies-energy-gain
-;    ]
-;  ]
-;end
+; end setup zombie agents ----------------------------
 ; end zombie agents procedures/reporters -------------
-
-; **************************
-
 ; #################################################################################################################
 ; Programmers:
 ; |---------------------------HUMANS-------------------
@@ -322,7 +313,7 @@ end
 ; |-------|--------------------------------------------
 ; |3-digit|  Name
 ; |-------|--------------------------------------------
-; |<xyz>  | <Xaver Ymzva>
+; |<JOD>  | Jake O´Donnell
 ; |       |
 ; |       |
 ; |       |
@@ -370,7 +361,7 @@ NIL
 T
 OBSERVER
 NIL
-S
+1
 NIL
 NIL
 1
@@ -387,7 +378,7 @@ T
 T
 OBSERVER
 NIL
-G
+2
 NIL
 NIL
 0
@@ -401,7 +392,7 @@ initial-number-humans
 initial-number-humans
 0
 50
-10.0
+11.0
 1
 1
 NIL
@@ -416,7 +407,7 @@ initial-number-zombies
 initial-number-zombies
 1
 50
-10.0
+11.0
 1
 1
 NIL
@@ -431,7 +422,7 @@ zombies-energy-gain
 zombies-energy-gain
 0
 100
-75.0
+20.0
 1
 1
 NIL
@@ -466,7 +457,7 @@ setup-age
 setup-age
 0
 100
-50.0
+81.0
 1
 1
 NIL
@@ -481,7 +472,7 @@ ticks-per-year
 ticks-per-year
 0
 100
-50.0
+3.0
 1
 1
 NIL
@@ -496,7 +487,7 @@ reproduction-age
 reproduction-age
 0
 100
-25.0
+0.0
 1
 1
 NIL
@@ -511,7 +502,7 @@ maximum-age
 maximum-age
 0
 100
-86.0
+0.0
 1
 1
 NIL
@@ -526,7 +517,7 @@ energy-start-zombies
 energy-start-zombies
 0
 200
-75.0
+200.0
 1
 1
 NIL
@@ -549,7 +540,7 @@ SWITCH
 258
 Show-energy?
 Show-energy?
-0
+1
 1
 -1000
 
@@ -562,11 +553,33 @@ vision-radius
 vision-radius
 0
 10
-8.0
+6.0
 1
 1
 NIL
 HORIZONTAL
+
+MONITOR
+468
+569
+570
+614
+NIL
+count humans
+17
+1
+11
+
+MONITOR
+359
+569
+463
+614
+NIL
+count zombies
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
