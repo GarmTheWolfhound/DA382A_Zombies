@@ -346,7 +346,9 @@ end
 ; |-------|--------------------------------------------
 ; |<JOD>  | Jake O´Donnell
 ; |<SÄR>  | Julian Wijkström
-; |       |
+; | <JOD> | Jake O´Donnell
+; | <SÄR> | Julian Wijkström
+; | <OEA> | Oskar Erik Adolfsson
 ; |       |
 ; |       |
 ; |----------------------------------------------------
