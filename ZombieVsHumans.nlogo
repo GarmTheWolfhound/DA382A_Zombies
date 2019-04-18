@@ -25,7 +25,7 @@ breed [ humans human ]
 
 ; ************* AGENT-SPECIFIC VARIABLES *********
 turtles-own []
-zombies-own [energy target]
+zombies-own [energy target speedcoefficient]
 humans-own [latest-birth age]
 ; ***************************
 
@@ -166,6 +166,7 @@ to setup-zombies
     set color red
     set size 3  ; easier to see
     set energy energy-start-zombies
+    set speedcoefficient (zombie-speed-max - zombie-speed-min) / ln(101)
     setxy random-xcor random-ycor
   ]
 end
@@ -213,15 +214,18 @@ to move-zombies[State]
           face target
         ]
       if energy > 100 [
-          forward 1
+          forward zombie-speed-max
           set energy energy - 1
       ]
-      if energy <= 40 [
-          forward 0.4
+      if energy < 0 [
+          forward zombie-speed-min
       ]
-      if energy < 100 and energy > 40 [
-          forward energy / 100
-          set energy energy - 1
+      if energy <= 100 and energy >= 0 [
+        forward speedcoefficient * ln(energy + 1) + zombie-speed-min
+        set energy energy - 1
+        if energy < 0 [
+          set energy 0
+        ]
       ]
 
       ;;Show energy
@@ -231,7 +235,6 @@ to move-zombies[State]
     ]
     eat-human
   ]
-
 end
 
 to eat-human
@@ -244,6 +247,9 @@ to eat-human
       ]
       ask humans-here [die]
       set energy energy + zombies-energy-gain
+      if energy > 100 [
+          set energy 100
+      ]
     ]
     set target nobody
   ]
@@ -322,7 +328,7 @@ end
 ; |-------|--------------------------------------------
 ; |3-digit|  Name
 ; |-------|--------------------------------------------
-; |<xyz>  | <Xaver Ymzva>
+; | <SÄR> | Julian Wijkström
 ; |       |
 ; |       |
 ; |       |
@@ -564,6 +570,36 @@ vision-radius
 10
 8.0
 1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+793
+510
+965
+543
+zombie-speed-min
+zombie-speed-min
+0
+1
+0.2
+0.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+964
+510
+1136
+543
+zombie-speed-max
+zombie-speed-max
+0
+1
+0.7
+0.01
 1
 NIL
 HORIZONTAL
