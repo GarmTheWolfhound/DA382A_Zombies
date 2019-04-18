@@ -27,6 +27,8 @@ breed [ humans human ]
 turtles-own []
 zombies-own [energy target]
 humans-own [latest-birth age vision]
+zombies-own [energy target speedcoefficient]
+humans-own [latest-birth age]
 ; ***************************
 
 
@@ -173,6 +175,7 @@ to setup-zombies
     set color red
     set size 3  ; easier to see
     set energy energy-start-zombies
+    set speedcoefficient (zombie-speed-max - zombie-speed-min) / ln(101)
     setxy random-xcor random-ycor
   ]
 end
@@ -215,15 +218,40 @@ to move-zombies[State]
       if(target != nobody) [
         face target
         set-speed
+
+      ;;Only move if you have energy
+
+        ;;Check if zombie has a target otherwise set target to be the closest human
+        set target min-one-of humans in-radius vision-radius [distance myself]
+        if(target != nobody) [
+          face target
+        ]
+      if energy > 100 [
+          forward zombie-speed-max
+          set energy energy - 1
       ]
       if(target = nobody) [
         right random 45
         left random 45
         set-speed
+      if energy < 0 [
+          forward zombie-speed-min
       ]
       release-zombie
       ;Show energy
       show-energy
+      if energy <= 100 and energy >= 0 [
+        forward speedcoefficient * ln(energy + 1) + zombie-speed-min
+        set energy energy - 1
+        if energy < 0 [
+          set energy 0
+        ]
+      ]
+
+      ;;Show energy
+      ifelse show-energy?
+      [ set label energy ]
+      [ set label "" ]
     ]
     eat-human
   ]
@@ -273,6 +301,9 @@ to eat-human
       ]
       ask humans-here [die]
       set energy energy + zombies-energy-gain
+      if energy > 100 [
+          set energy 100
+      ]
     ]
   ]
 end
@@ -314,6 +345,7 @@ end
 ; |3-digit|  Name
 ; |-------|--------------------------------------------
 ; |<JOD>  | Jake O´Donnell
+; | <SÄR> | Julian Wijkström
 ; |       |
 ; |       |
 ; |       |
@@ -580,6 +612,36 @@ count zombies
 17
 1
 11
+
+SLIDER
+793
+510
+965
+543
+zombie-speed-min
+zombie-speed-min
+0
+1
+0.2
+0.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+964
+510
+1136
+543
+zombie-speed-max
+zombie-speed-max
+0
+1
+0.7
+0.01
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
