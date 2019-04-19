@@ -210,10 +210,12 @@ to move-zombies[State]
   ;While it sees the target it faces it and hunts it othervise it looks for a new target to hunt while moving in a random pattern to "trick" the humans.
   ;Speed is determined by energy where min speed is defined as 0.5 steps forward and max is 1.
   if State = "Step3"[
-    if not any? humans [stop]
+   if not any? humans [stop]
     ask zombies [
+
       set target min-one-of humans in-radius vision-radius [distance myself]
       if(target != nobody) [
+        ;alert-check
         face target
         set-speed
       ]
@@ -240,6 +242,18 @@ to move-zombies[State]
       release-zombie
       eat-human
 
+    ]
+  ]
+end
+
+to alert-check
+  let hum count humans in-radius vision-radius
+  let zom count zombies in-radius vision-radius
+  if(((hum /  zom) > 3) or ((hum /  zom) = 3)) [
+    let zomInDanger zombies-here
+    ask zombies in-radius vision-radius [
+      face zomInDanger
+      set-speed
     ]
   ]
 end
@@ -426,7 +440,7 @@ initial-number-humans
 initial-number-humans
 0
 50
-15.0
+20.0
 1
 1
 NIL
@@ -441,7 +455,7 @@ initial-number-zombies
 initial-number-zombies
 1
 50
-15.0
+2.0
 1
 1
 NIL
@@ -481,7 +495,7 @@ PENS
 "Zombies" 1.0 0 -10899396 true "" "plot count zombies"
 "Women" 1.0 0 -2064490 true "" "plot count humans with [color = pink]"
 "Men" 1.0 0 -13345367 true "" "plot count humans with [color = blue]"
-"pen-3" 1.0 0 -7500403 true "" "plot count humans"
+"pen-3" 1.0 0 -7500403 true "" "plot ((count humans) + (count zombies))"
 
 SLIDER
 794
@@ -492,7 +506,7 @@ setup-age
 setup-age
 0
 100
-0.0
+21.0
 1
 1
 NIL
@@ -625,7 +639,7 @@ zombie-speed-min
 zombie-speed-min
 0
 1
-1.0
+0.29
 0.01
 1
 NIL
@@ -640,11 +654,22 @@ zombie-speed-max
 zombie-speed-max
 0
 1
-1.0
+0.71
 0.01
 1
 NIL
 HORIZONTAL
+
+MONITOR
+579
+568
+636
+613
+total
+((count humans) + (count zombies))
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
