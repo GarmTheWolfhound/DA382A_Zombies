@@ -252,9 +252,15 @@ to alert-check
   if(((hum /  zom) > 3) or ((hum /  zom) = 3)) [
     let zomInDanger zombies-here
     ask zombies in-radius vision-radius [
-      face zomInDanger
-      set-speed
+      if zomIndanger != zombies-here[ ;En zomInDanger ska inte försöka rädda en annan zomInDanger /OEA
+        face zomInDanger
+        set-speed
+      ]
     ]
+;    ask zombies in-radius vision-radius [ ;Är inte det här samma individer som i zom, som redan har kontrollerats? /OEA
+;      face zomInDanger
+;      set-speed
+;    ]
   ]
 end
 
@@ -440,7 +446,7 @@ initial-number-humans
 initial-number-humans
 0
 50
-20.0
+50.0
 1
 1
 NIL
@@ -455,7 +461,7 @@ initial-number-zombies
 initial-number-zombies
 1
 50
-2.0
+3.0
 1
 1
 NIL
@@ -470,7 +476,7 @@ zombies-energy-gain
 zombies-energy-gain
 0
 100
-32.0
+10.0
 1
 1
 NIL
@@ -506,7 +512,7 @@ setup-age
 setup-age
 0
 100
-21.0
+24.0
 1
 1
 NIL
@@ -521,7 +527,7 @@ ticks-per-year
 ticks-per-year
 0
 100
-0.0
+50.0
 1
 1
 NIL
@@ -536,7 +542,7 @@ reproduction-age
 reproduction-age
 0
 100
-0.0
+17.0
 1
 1
 NIL
@@ -551,7 +557,7 @@ maximum-age
 maximum-age
 0
 100
-0.0
+70.0
 1
 1
 NIL
@@ -566,7 +572,7 @@ energy-start-zombies
 energy-start-zombies
 0
 200
-100.0
+50.0
 1
 1
 NIL
@@ -602,7 +608,7 @@ vision-radius
 vision-radius
 0
 10
-6.0
+5.0
 1
 1
 NIL
@@ -639,7 +645,7 @@ zombie-speed-min
 zombie-speed-min
 0
 1
-0.29
+0.2
 0.01
 1
 NIL
@@ -654,7 +660,7 @@ zombie-speed-max
 zombie-speed-max
 0
 1
-0.71
+0.59
 0.01
 1
 NIL
