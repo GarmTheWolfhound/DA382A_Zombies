@@ -210,12 +210,10 @@ to move-zombies[State]
   ;While it sees the target it faces it and hunts it othervise it looks for a new target to hunt while moving in a random pattern to "trick" the humans.
   ;Speed is determined by energy where min speed is defined as 0.5 steps forward and max is 1.
   if State = "Step3"[
-   if not any? humans [stop]
+    if not any? humans [stop]
     ask zombies [
-
       set target min-one-of humans in-radius vision-radius [distance myself]
       if(target != nobody) [
-        ;alert-check
         face target
         set-speed
       ]
@@ -241,26 +239,9 @@ to move-zombies[State]
       ]
       release-zombie
       eat-human
+    ;  communicate
 
     ]
-  ]
-end
-
-to alert-check
-  let hum count humans in-radius vision-radius
-  let zom count zombies in-radius vision-radius
-  if(((hum /  zom) > 3) or ((hum /  zom) = 3)) [
-    let zomInDanger zombies-here
-    ask zombies in-radius vision-radius [
-      if zomIndanger != zombies-here[ ;En zomInDanger ska inte försöka rädda en annan zomInDanger /OEA
-        face zomInDanger
-        set-speed
-      ]
-    ]
-;    ask zombies in-radius vision-radius [ ;Är inte det här samma individer som i zom, som redan har kontrollerats? /OEA
-;      face zomInDanger
-;      set-speed
-;    ]
   ]
 end
 
@@ -340,6 +321,17 @@ to set-night-day
     set timeOfDay "night"
   ]
 end
+
+;CVLA
+;to communicate
+;  ask zombies in-radius 1 with [target = [target] of myself]
+;   [create-links-with other zombies-here
+;      [
+;         set color yellow
+;      ]
+;  ]
+;end
+
 ; --zombie agents main function ----------------------
 to live-zombies
   ; <3-digit initial of programmer for each subfunction of the agent>
@@ -366,10 +358,8 @@ end
 ; |-------|--------------------------------------------
 ; |<JOD>  | Jake O´Donnell
 ; |<SÄR>  | Julian Wijkström
-; | <JOD> | Jake O´Donnell
-; | <SÄR> | Julian Wijkström
 ; | <OEA> | Oskar Erik Adolfsson
-; |       |
+; |<CVLA> | Chippen Vlahija
 ; |       |
 ; |----------------------------------------------------
 ; -----------------------------------------------------
@@ -446,7 +436,7 @@ initial-number-humans
 initial-number-humans
 0
 50
-50.0
+36.0
 1
 1
 NIL
@@ -461,7 +451,7 @@ initial-number-zombies
 initial-number-zombies
 1
 50
-3.0
+2.0
 1
 1
 NIL
@@ -476,7 +466,7 @@ zombies-energy-gain
 zombies-energy-gain
 0
 100
-10.0
+32.0
 1
 1
 NIL
@@ -501,7 +491,7 @@ PENS
 "Zombies" 1.0 0 -10899396 true "" "plot count zombies"
 "Women" 1.0 0 -2064490 true "" "plot count humans with [color = pink]"
 "Men" 1.0 0 -13345367 true "" "plot count humans with [color = blue]"
-"pen-3" 1.0 0 -7500403 true "" "plot ((count humans) + (count zombies))"
+"pen-3" 1.0 0 -7500403 true "" "plot count humans"
 
 SLIDER
 794
@@ -512,7 +502,7 @@ setup-age
 setup-age
 0
 100
-24.0
+0.0
 1
 1
 NIL
@@ -527,7 +517,7 @@ ticks-per-year
 ticks-per-year
 0
 100
-50.0
+0.0
 1
 1
 NIL
@@ -542,7 +532,7 @@ reproduction-age
 reproduction-age
 0
 100
-17.0
+0.0
 1
 1
 NIL
@@ -557,7 +547,7 @@ maximum-age
 maximum-age
 0
 100
-70.0
+0.0
 1
 1
 NIL
@@ -572,7 +562,7 @@ energy-start-zombies
 energy-start-zombies
 0
 200
-50.0
+100.0
 1
 1
 NIL
@@ -608,7 +598,7 @@ vision-radius
 vision-radius
 0
 10
-5.0
+6.0
 1
 1
 NIL
@@ -645,7 +635,7 @@ zombie-speed-min
 zombie-speed-min
 0
 1
-0.2
+1.0
 0.01
 1
 NIL
@@ -660,22 +650,11 @@ zombie-speed-max
 zombie-speed-max
 0
 1
-0.59
+1.0
 0.01
 1
 NIL
 HORIZONTAL
-
-MONITOR
-579
-568
-636
-613
-total
-((count humans) + (count zombies))
-17
-1
-11
 
 @#$#@#$#@
 ## WHAT IS IT?
