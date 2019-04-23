@@ -254,6 +254,7 @@ to show-energy
 end
 
 ; OEA
+; CVLA
 to alert
   let hum count humans in-radius vision-radius
   let zomVisionRadius count zombies in-radius vision-radius
