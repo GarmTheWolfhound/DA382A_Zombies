@@ -253,6 +253,7 @@ to show-energy
   [ set label "" ]
 end
 
+; OEA
 to alert
   let hum count humans in-radius vision-radius
   let zomVisionRadius count zombies in-radius vision-radius
@@ -697,6 +698,23 @@ total
 17
 1
 11
+
+BUTTON
+90
+68
+153
+101
+go once
+go
+NIL
+1
+T
+OBSERVER
+NIL
+3
+NIL
+NIL
+0
 
 @#$#@#$#@
 ## WHAT IS IT?
