@@ -25,7 +25,7 @@ breed [ humans human ]
 
 ; ************* AGENT-SPECIFIC VARIABLES *********
 turtles-own []
-zombies-own [energy target speedcoefficient]
+zombies-own [energy target speedcoefficient inDanger]
 humans-own [latest-birth age vision]
 ; ***************************
 
@@ -200,7 +200,6 @@ to move-zombies[State]
         left random 45
         forward 0.6
       ]
-      ;;Show energy
       show-energy
     ]
     eat-human
@@ -215,7 +214,7 @@ to move-zombies[State]
       set target min-one-of humans in-radius vision-radius [distance myself]
       if(target != nobody) [
         face target
-        set-speed
+
       ]
       ;;Only move if you have energy
 
@@ -223,13 +222,13 @@ to move-zombies[State]
       set target min-one-of humans in-radius vision-radius [distance myself]
       if(target != nobody) [
         face target
-        set-speed
+
       ]
 
       if(target = nobody) [
         right random 45
         left random 45
-        set-speed
+
         if energy < 1 [
           forward zombie-speed-min
         ]
@@ -237,9 +236,11 @@ to move-zombies[State]
         ;Show energy
         show-energy
       ]
+      alert
       release-zombie
       eat-human
-    ;  communicate
+      set-speed
+      ;communicate
 
     ]
   ]
@@ -252,11 +253,42 @@ to show-energy
   [ set label "" ]
 end
 
+to alert
+  let hum count humans in-radius vision-radius
+  let zomVisionRadius count zombies in-radius vision-radius
+  let zom count zombies in-radius 1
+
+
+  if(((hum / zom) >= 3)) [
+    set inDanger 1
+    if(((hum / zomVisionRadius) < 3)) [
+      set target min-one-of zombies in-radius vision-radius [distance myself]
+      if(target != zombies-here)[
+        face target
+      ]
+      set pcolor blue
+    ]
+
+    if(((hum / zomVisionRadius) >= 3))[
+      if(zomVisionRadius >= 2) [
+        set target min-one-of zombies in-radius vision-radius [distance myself]
+        face target
+        set pcolor red
+      ]
+      if(zomVisionRadius = 1) [
+        set heading heading - 180
+        set pcolor green
+      ]
+    ]
+  ]
+  set-speed
+end
+
 ;JOD
 to release-zombie
   let hum count humans in-radius 1
   let zom count zombies in-radius 1
-  if(((hum /  zom) > 3) or ((hum /  zom) = 3)) [
+  if(((hum / zom) >= 3)) [
     ask zombies-here [die]
   ]
 end
@@ -324,10 +356,9 @@ end
 
 ;CVLA
 ;to communicate
-;  ask zombies in-radius 1 with [target = [target] of myself]
-;   [create-links-with other zombies-here
-;      [
-;         set color yellow
+;  ask zombies in-radius vision-radius with [target = [target] of myself][
+;    create-links-with other zombies-here [
+;         set color white
 ;      ]
 ;  ]
 ;end
@@ -598,7 +629,7 @@ vision-radius
 vision-radius
 0
 10
-6.0
+4.0
 1
 1
 NIL
@@ -635,7 +666,7 @@ zombie-speed-min
 zombie-speed-min
 0
 1
-1.0
+0.2
 0.01
 1
 NIL
@@ -650,11 +681,22 @@ zombie-speed-max
 zombie-speed-max
 0
 1
-1.0
+0.6
 0.01
 1
 NIL
 HORIZONTAL
+
+MONITOR
+580
+568
+637
+613
+total
+(count humans) + (count zombies)
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
