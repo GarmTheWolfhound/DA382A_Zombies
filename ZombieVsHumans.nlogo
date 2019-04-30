@@ -255,6 +255,7 @@ end
 
 ; OEA
 ; CVLA
+; AAR
 to alert
   let hum count humans in-radius vision-radius
   let zomVisionRadius count zombies in-radius vision-radius
@@ -393,7 +394,7 @@ end
 ; |<SÄR>  | Julian Wijkström
 ; | <OEA> | Oskar Erik Adolfsson
 ; |<CVLA> | Chippen Vlahija
-; |       |
+; |<AAR   | Ahmed Abdulkader
 ; |----------------------------------------------------
 ; -----------------------------------------------------
 
@@ -469,7 +470,7 @@ initial-number-humans
 initial-number-humans
 0
 50
-36.0
+30.0
 1
 1
 NIL
@@ -484,7 +485,7 @@ initial-number-zombies
 initial-number-zombies
 1
 50
-2.0
+4.0
 1
 1
 NIL
@@ -631,7 +632,7 @@ vision-radius
 vision-radius
 0
 10
-4.0
+6.0
 1
 1
 NIL
