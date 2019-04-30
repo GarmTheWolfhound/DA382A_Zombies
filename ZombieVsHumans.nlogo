@@ -264,21 +264,24 @@ to alert
 
   if(((hum / zom) >= 3)) [
     set inDanger 1
-    if(((hum / zomVisionRadius) < 3)) [
+    if(((hum / zomVisionRadius) < 3)) [ ;Zombien i fara men det finns tillräckligt med zombies för att hjälpa
       set target min-one-of zombies in-radius vision-radius [distance myself]
-      if(target != zombies-here)[
+      if(target != zombies-here)[ ;Den här koden låter oss inte hitta ett annat target om det behövs
         face target
       ]
       set pcolor blue
     ]
 
     if(((hum / zomVisionRadius) >= 3))[
-      if(zomVisionRadius >= 2) [
+      if(zomVisionRadius >= 2) [ ;Finns inte tillräckligt med zombies för att hjälpa
         set target min-one-of zombies in-radius vision-radius [distance myself]
+;        if target != nobody [ ;Tänkt att låta oss se target, men triggas inte. Vore bra för proaktivt tänkande
+;          ask target[ set color black ]
+;        ]
         face target
         set pcolor red
       ]
-      if(zomVisionRadius = 1) [
+      if(zomVisionRadius = 1) [ ;Finns inte någon zombie som kan hjälpa
         set heading heading - 180
         set pcolor green
       ]
@@ -470,7 +473,7 @@ initial-number-humans
 initial-number-humans
 0
 50
-30.0
+40.0
 1
 1
 NIL
@@ -485,7 +488,7 @@ initial-number-zombies
 initial-number-zombies
 1
 50
-4.0
+3.0
 1
 1
 NIL
