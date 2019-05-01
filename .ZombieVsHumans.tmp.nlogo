@@ -441,7 +441,8 @@ to alert
   if(((hum / zom) >= 3)) [
     set inDanger 1
     if(((hum / zomVisionRadius) < 3)) [ ;Zombien i fara men det finns tillräckligt med zombies för att hjälpa
-      set target min-one-of zombies in-radius vision-radius [distance myself]
+
+set target min-one-of zombies in-radius vision-radius [distance myself]
       if(target != zombies-here)[ ;Den här koden låter oss inte hitta ett annat target om det behövs
         set pcolor orange
         face target
