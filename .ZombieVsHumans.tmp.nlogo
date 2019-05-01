@@ -49,7 +49,7 @@ to go
   live-humans
   live-zombies
   tick
-
+  show ticks
   ;common functions and stop-expressions
   year-counter
   set-night-day
@@ -507,35 +507,23 @@ to eat-human
     if(hum != nobody)[
       ask zombies-here [
         if (eatTimer = 0) [
-           ask zombies-here [
-            set eatTimer 4
-            show eatTimer
-          ]
-
           hatch-zombies 1[
-            ask hum [die]
+
             set shape "zombie"
             set size 3
             set energy energy-start-zombies
             set eatTimer 4
             show "new zombie cant eat"
-
           ]
-;          ask zombies-here [
-;           if (energy = 47) [
-;            show "new zombie"
-;            show eatTimer
-;            ]
-;          ]
-
-          set energy energy + zombies-energy-gain
-          ;Freezes zombie for 3 ticks
-
+          set eatTimer 4
+          show "human eaten"
         ]
+        set energy energy + zombies-energy-gain
+        ;Freezes zombie for 3 ticks
       ]
-      if energy > 100 [
-        set energy 100
-      ]
+    ]
+    if energy > 100 [
+      set energy 100
     ]
   ]
 end
