@@ -25,7 +25,7 @@ breed [ humans human ]
 
 ; ************* AGENT-SPECIFIC VARIABLES *********
 turtles-own []
-zombies-own [energy target speedcoefficient inDanger eatTimershow eatTimer]
+zombies-own [energy target speedcoefficient inDanger eatTimershow eatTimer myGroup]
 humans-own [latest-birth age parents nrOfChildren HState]
 
 ; ***************************
@@ -413,10 +413,10 @@ to move-zombies[State]
       show-energy
       alert
       release-zombie
-      ask zombie [
-     eat-human
-      set-speed
-      ;communicate
+;      ask zombie [
+;     eat-human
+;      set-speed
+;      ;communicate
 
     ]
   ]
@@ -444,6 +444,7 @@ to alert
     if(((hum / zomVisionRadius) < 3)) [ ;Zombien i fara men det finns tillräckligt med zombies för att hjälpa
       set target min-one-of zombies in-radius vision-radius [distance myself]
       if(target != zombies-here)[ ;Den här koden låter oss inte hitta ett annat target om det behövs
+        group-up
         set pcolor orange
         face target
       ]
@@ -469,6 +470,7 @@ to alert
 end
 
 ;JOD
+; JSN
 to release-zombie
   let hum count humans in-radius 1
   let zom count zombies in-radius 1
@@ -502,7 +504,11 @@ to set-speed
 end
 
 ;JOD
+;JSN
 to eat-human
+  ;måste lägga till ta de zombies med lägst energi om >3 zombies på patch
+  ask patches[
+    if count zombies-here < 3[
   ask zombies [
     let hum one-of humans-here
     if(hum != nobody)[
@@ -524,7 +530,37 @@ to eat-human
       ]
     ]
   ]
+    ]
+  ]
 end
+
+;JSN
+to group-up
+  let zom count zombies in-radius vision-radius
+  let unassigned zombies
+  ask zombies [set myGroup -1]
+  let current-group 0
+  while[any? zombies ][
+    ask n-of zom zombies [set myGroup current-group]
+    set current-group current-group + 1
+    set unassigned zombies with [myGroup = -1]
+    show "zombies grouped"
+  ]
+
+end
+
+;JSN
+;JOD
+to go-to-target
+   set target min-one-of humans in-radius vision-radius [distance myself]
+  ask zombies in-radius vision-radius [
+    if myGroup != -1[
+    face target
+    ]
+  ]
+  set-speed
+end
+
 
 ; --zombie agents main function ----------------------
 to live-zombies
@@ -630,7 +666,7 @@ initial-number-humans
 initial-number-humans
 0
 50
-20.0
+0.0
 1
 1
 NIL
@@ -645,7 +681,7 @@ initial-number-zombies
 initial-number-zombies
 1
 50
-5.0
+0.0
 1
 1
 NIL
@@ -660,7 +696,7 @@ zombies-energy-gain
 zombies-energy-gain
 0
 100
-15.0
+0.0
 1
 1
 NIL
@@ -696,7 +732,7 @@ setup-age
 setup-age
 0
 100
-20.0
+0.0
 1
 1
 NIL
@@ -711,7 +747,7 @@ ticks-per-year
 ticks-per-year
 0
 100
-51.0
+0.0
 1
 1
 NIL
@@ -726,7 +762,7 @@ reproduction-age
 reproduction-age
 0
 100
-2.0
+0.0
 1
 1
 NIL
@@ -741,7 +777,7 @@ maximum-age
 maximum-age
 0
 100
-25.0
+0.0
 1
 1
 NIL
@@ -756,7 +792,7 @@ energy-start-zombies
 energy-start-zombies
 0
 200
-50.0
+0.0
 1
 1
 NIL
@@ -792,7 +828,7 @@ vision-radius
 vision-radius
 0
 10
-6.0
+0.0
 1
 1
 NIL
@@ -829,7 +865,7 @@ zombie-speed-min
 zombie-speed-min
 0
 1
-0.54
+0.0
 0.01
 1
 NIL
@@ -844,7 +880,7 @@ zombie-speed-max
 zombie-speed-max
 0
 1
-0.6
+0.0
 0.01
 1
 NIL
@@ -887,7 +923,7 @@ ticks-per-day-night
 ticks-per-day-night
 0
 100
-20.0
+0.0
 1
 1
 NIL
@@ -913,7 +949,7 @@ maximumNrOfChildren
 maximumNrOfChildren
 0
 100
-10.0
+0.0
 1
 1
 NIL
