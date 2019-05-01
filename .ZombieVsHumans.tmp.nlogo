@@ -25,7 +25,7 @@ breed [ humans human ]
 
 ; ************* AGENT-SPECIFIC VARIABLES *********
 turtles-own []
-zombies-own [energy target speedcoefficient inDanger eatTimershow eatTimer]
+zombies-own [energy target speedcoefficient inDanger eatTimershow eatTimer myGroup]
 humans-own [latest-birth age parents nrOfChildren HState]
 
 ; ***************************
@@ -49,7 +49,7 @@ to go
   live-humans
   live-zombies
   tick
-  show ticks
+
   ;common functions and stop-expressions
   year-counter
   set-night-day
@@ -345,9 +345,9 @@ end
 ; --setup zombie agents --------------------------------
 to setup-zombies
   create-zombies initial-number-zombies [
-    set shape "arrow"
+    set shape "zombie"
     set color red
-    set size 1  ; easier to see
+    set size 3  ; easier to see
     set energy energy-start-zombies
     set speedcoefficient (zombie-speed-max - zombie-speed-min) / ln(101)
     setxy random-xcor random-ycor
@@ -415,7 +415,7 @@ to move-zombies[State]
       release-zombie
       eat-human
       set-speed
-      ;communicate
+      ;      ;communicate
 
     ]
   ]
@@ -434,7 +434,7 @@ end
 ;JOD
 to alert
   let hum count humans in-radius (vision-radius / 2)
-  let zomVisionRadius count zombies in-radius (vision-radius / 2)
+  let zomVisionRadius count zombies in-radius vision-radius
   let zom count zombies in-radius 1
 
 
@@ -443,8 +443,8 @@ to alert
     if(((hum / zomVisionRadius) < 3)) [ ;Zombien i fara men det finns tillräckligt med zombies för att hjälpa
       set target min-one-of zombies in-radius vision-radius [distance myself]
       if(target != zombies-here)[ ;Den här koden låter oss inte hitta ett annat target om det behövs
-        set pcolor brown
-        ask target[ set color blue ]
+                                  ;group-up
+        set pcolor orange
         face target
       ]
       set pcolor blue
@@ -454,7 +454,7 @@ to alert
       if(zomVisionRadius >= 2) [ ;Finns inte tillräckligt med zombies för att hjälpa
         set target min-one-of zombies in-radius vision-radius [distance myself]
         if target != nobody [ ;Tänkt att låta oss se target, men triggas inte. Vore bra för proaktivt tänkande
-
+          ask target[ set color black ]
 
         ]
         face target
@@ -469,6 +469,7 @@ to alert
 end
 
 ;JOD
+; JSN
 to release-zombie
   let hum count humans in-radius 1
   let zom count zombies in-radius 1
@@ -483,8 +484,8 @@ to set-speed
   if (eatTimer != 0) [
     set eatTimer eatTimer - 1
     forward 0
-  ]
 
+  ]
   if(eatTimer = 0) [
     if energy > 100 [
       forward zombie-speed-max
@@ -502,25 +503,22 @@ to set-speed
 end
 
 ;JOD
+;JSN
 to eat-human
   ask zombies [
     let hum one-of humans-here
     ask zombies-here [
-
       if (eatTimer = 0) [
         if(hum != nobody)[
           hatch-zombies 1[
             ask hum [die]
-            set shape "arrow"
-            set size 1
+            set size 3
             set energy energy-start-zombies
             set eatTimer 4
             show "new zombie cant eat"
           ]
           set eatTimer 4
-          set shape "arrow"
           show "human eaten"
-
           set energy energy + zombies-energy-gain
           if energy > 100 [
             set energy 100
@@ -533,6 +531,65 @@ to eat-human
 
   ]
 end
+
+;JOD
+;JSN
+;to eat-human
+;  ;måste lägga till ta de zombies med lägst energi om >3 zombies på patch
+;  ask patches[
+;    if count zombies-here < 3[
+;      ask zombies [
+;        let hum one-of humans-here
+;        if(hum != nobody)[
+;          hatch-zombies 1[
+;            ask hum [die]
+;            set shape "zombie"
+;            set size 3
+;            set energy energy-start-zombies
+;          ]
+;          set energy energy + zombies-energy-gain
+;          ;Freezes zombie for 3 ticks
+;          ask zombies-here [
+;            set eatTimer 4
+;            show eatTimer
+;          ]
+;
+;          if energy > 100 [
+;            set energy 100
+;          ]
+;        ]
+;      ]
+;    ]
+;  ]
+;end
+
+;JSN
+;to group-up
+;  let zom count zombies in-radius vision-radius
+;  let unassigned zombies
+;  ask zombies [set myGroup -1]
+;  let current-group 0
+;  while[any? zombies ][
+;    ask n-of zom zombies [set myGroup current-group]
+;    set current-group current-group + 1
+;    set unassigned zombies with [myGroup = -1]
+;    show "zombies grouped"
+;  ]
+;
+;end
+;
+;;JSN
+;;JOD
+;to go-to-target
+;   set target min-one-of humans in-radius vision-radius [distance myself]
+;  ask zombies in-radius vision-radius [
+;    if myGroup != -1[
+;    face target
+;    ]
+;  ]
+;  set-speed
+;end
+
 
 ; --zombie agents main function ----------------------
 to live-zombies
@@ -638,7 +695,7 @@ initial-number-humans
 initial-number-humans
 0
 50
-20.0
+15.0
 1
 1
 NIL
@@ -653,7 +710,7 @@ initial-number-zombies
 initial-number-zombies
 1
 50
-10.0
+4.0
 1
 1
 NIL
@@ -668,7 +725,7 @@ zombies-energy-gain
 zombies-energy-gain
 0
 100
-25.0
+10.0
 1
 1
 NIL
@@ -704,7 +761,7 @@ setup-age
 setup-age
 0
 100
-26.0
+5.0
 1
 1
 NIL
@@ -719,7 +776,7 @@ ticks-per-year
 ticks-per-year
 0
 100
-51.0
+50.0
 1
 1
 NIL
@@ -764,7 +821,7 @@ energy-start-zombies
 energy-start-zombies
 0
 200
-70.0
+100.0
 1
 1
 NIL
@@ -800,7 +857,7 @@ vision-radius
 vision-radius
 0
 10
-6.0
+5.0
 1
 1
 NIL
@@ -837,7 +894,7 @@ zombie-speed-min
 zombie-speed-min
 0
 1
-0.3
+0.2
 0.01
 1
 NIL
@@ -852,7 +909,7 @@ zombie-speed-max
 zombie-speed-max
 0
 1
-0.6
+0.7
 0.01
 1
 NIL
