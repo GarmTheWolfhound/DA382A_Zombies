@@ -345,9 +345,9 @@ end
 ; --setup zombie agents --------------------------------
 to setup-zombies
   create-zombies initial-number-zombies [
-    set shape "zombie"
+    set shape "arrow"
     set color red
-    set size 3  ; easier to see
+    set size 1  ; easier to see
     set energy energy-start-zombies
     set speedcoefficient (zombie-speed-max - zombie-speed-min) / ln(101)
     setxy random-xcor random-ycor
@@ -434,7 +434,7 @@ end
 ;JOD
 to alert
   let hum count humans in-radius (vision-radius / 2)
-  let zomVisionRadius count zombies in-radius vision-radius
+  let zomVisionRadius count zombies in-radius (vision-radius / 2)
   let zom count zombies in-radius 1
 
 
@@ -443,7 +443,8 @@ to alert
     if(((hum / zomVisionRadius) < 3)) [ ;Zombien i fara men det finns tillräckligt med zombies för att hjälpa
       set target min-one-of zombies in-radius vision-radius [distance myself]
       if(target != zombies-here)[ ;Den här koden låter oss inte hitta ett annat target om det behövs
-        set pcolor orange
+        set pcolor brown
+        ask target[ set color blue ]
         face target
       ]
       set pcolor blue
@@ -453,7 +454,7 @@ to alert
       if(zomVisionRadius >= 2) [ ;Finns inte tillräckligt med zombies för att hjälpa
         set target min-one-of zombies in-radius vision-radius [distance myself]
         if target != nobody [ ;Tänkt att låta oss se target, men triggas inte. Vore bra för proaktivt tänkande
-          ask target[ set color black ]
+
 
         ]
         face target
@@ -482,8 +483,8 @@ to set-speed
   if (eatTimer != 0) [
     set eatTimer eatTimer - 1
     forward 0
-
   ]
+
   if(eatTimer = 0) [
     if energy > 100 [
       forward zombie-speed-max
@@ -504,27 +505,32 @@ end
 to eat-human
   ask zombies [
     let hum one-of humans-here
-    if(hum != nobody)[
-      ask zombies-here [
-        if (eatTimer = 0) [
-          hatch-zombies 1[
+    ask zombies-here [
 
-            set shape "zombie"
-            set size 3
+      if (eatTimer = 0) [
+        if(hum != nobody)[
+          hatch-zombies 1[
+            ask hum [die]
+            set shape "arrow"
+            set size 1
             set energy energy-start-zombies
             set eatTimer 4
             show "new zombie cant eat"
           ]
           set eatTimer 4
+          set shape "arrow"
           show "human eaten"
+
+          set energy energy + zombies-energy-gain
+          if energy > 100 [
+            set energy 100
+          ]
         ]
-        set energy energy + zombies-energy-gain
+
         ;Freezes zombie for 3 ticks
       ]
     ]
-    if energy > 100 [
-      set energy 100
-    ]
+
   ]
 end
 
@@ -647,7 +653,7 @@ initial-number-zombies
 initial-number-zombies
 1
 50
-5.0
+10.0
 1
 1
 NIL
@@ -662,7 +668,7 @@ zombies-energy-gain
 zombies-energy-gain
 0
 100
-15.0
+25.0
 1
 1
 NIL
@@ -698,7 +704,7 @@ setup-age
 setup-age
 0
 100
-20.0
+26.0
 1
 1
 NIL
@@ -758,7 +764,7 @@ energy-start-zombies
 energy-start-zombies
 0
 200
-47.0
+70.0
 1
 1
 NIL
@@ -831,7 +837,7 @@ zombie-speed-min
 zombie-speed-min
 0
 1
-0.54
+0.3
 0.01
 1
 NIL
