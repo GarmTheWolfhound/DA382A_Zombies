@@ -25,7 +25,7 @@ breed [ humans human ]
 
 ; ************* AGENT-SPECIFIC VARIABLES *********
 turtles-own []
-zombies-own [energy target speedcoefficient inDanger eatTimer]
+zombies-own [energy target speedcoefficient inDanger eatTimershow eatTimer]
 humans-own [latest-birth age parents nrOfChildren HState]
 
 ; ***************************
@@ -413,7 +413,8 @@ to move-zombies[State]
       show-energy
       alert
       release-zombie
-      eat-human
+      ask zombie [
+     eat-human
       set-speed
       ;communicate
 
@@ -478,10 +479,11 @@ end
 
 ;JOD
 to set-speed
-   show eatTimer
+
   if (eatTimer != 0) [
     set eatTimer eatTimer - 1
     forward 0
+
   ]
   if(eatTimer = 0) [
     if energy > 100 [
@@ -514,6 +516,7 @@ to eat-human
       ;Freezes zombie for 3 ticks
       ask zombies-here [
         set eatTimer 4
+        show eatTimer
       ]
 
       if energy > 100 [
@@ -558,10 +561,10 @@ end
 ; #################################################################################################################
 @#$#@#$#@
 GRAPHICS-WINDOW
-217
-10
-771
-565
+184
+58
+738
+613
 -1
 -1
 16.55
@@ -585,9 +588,9 @@ ticks
 30.0
 
 BUTTON
--4
+17
 10
-59
+80
 43
 NIL
 setup
@@ -602,9 +605,9 @@ NIL
 1
 
 BUTTON
-74
+95
 11
-137
+158
 44
 NIL
 go
@@ -619,10 +622,10 @@ NIL
 0
 
 SLIDER
-4
-61
-176
-94
+741
+58
+913
+91
 initial-number-humans
 initial-number-humans
 0
@@ -634,10 +637,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-5
-111
-177
-144
+6
+57
+178
+90
 initial-number-zombies
 initial-number-zombies
 1
@@ -649,10 +652,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-5
-154
-177
-187
+8
+94
+180
+127
 zombies-energy-gain
 zombies-energy-gain
 0
@@ -664,10 +667,10 @@ NIL
 HORIZONTAL
 
 PLOT
-2
-395
-202
-545
+757
+218
+1260
+613
 plot 1
 NIL
 NIL
@@ -685,10 +688,10 @@ PENS
 "pen-3" 1.0 0 -7500403 true "" "plot count humans"
 
 SLIDER
-783
-13
-955
-46
+923
+138
+1095
+171
 setup-age
 setup-age
 0
@@ -700,25 +703,25 @@ NIL
 HORIZONTAL
 
 SLIDER
-783
-53
-955
-86
+367
+614
+539
+647
 ticks-per-year
 ticks-per-year
 0
 100
-50.0
+51.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-784
-95
-956
-128
+925
+59
+1097
+92
 reproduction-age
 reproduction-age
 0
@@ -730,10 +733,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-784
-135
-956
-168
+925
+99
+1097
+132
 maximum-age
 maximum-age
 0
@@ -745,10 +748,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1097
-81
-1269
-114
+6
+133
+178
+166
 energy-start-zombies
 energy-start-zombies
 0
@@ -760,20 +763,20 @@ NIL
 HORIZONTAL
 
 CHOOSER
-1104
-131
-1242
-176
+23
+305
+161
+350
 Tactics
 Tactics
 "Step2" "Step3" "Step4"
 1
 
 SWITCH
-1124
-225
-1259
-258
+24
+259
+159
+292
 Show-energy?
 Show-energy?
 0
@@ -781,10 +784,10 @@ Show-energy?
 -1000
 
 SLIDER
-887
-289
-1059
-322
+367
+689
+539
+722
 vision-radius
 vision-radius
 0
@@ -796,10 +799,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-468
-569
-570
-614
+406
+11
+508
+56
 NIL
 count humans
 17
@@ -807,10 +810,10 @@ count humans
 11
 
 MONITOR
-359
-569
-463
-614
+297
+11
+401
+56
 NIL
 count zombies
 17
@@ -818,10 +821,10 @@ count zombies
 11
 
 SLIDER
-793
-510
-965
-543
+6
+177
+178
+210
 zombie-speed-min
 zombie-speed-min
 0
@@ -833,10 +836,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-964
-510
-1136
-543
+6
+215
+178
+248
 zombie-speed-max
 zombie-speed-max
 0
@@ -848,10 +851,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-580
-568
-637
-613
+518
+10
+575
+55
 total
 (count humans) + (count zombies)
 17
@@ -859,9 +862,9 @@ total
 11
 
 BUTTON
-148
+169
 12
-211
+232
 45
 go once
 go
@@ -876,10 +879,10 @@ NIL
 0
 
 SLIDER
-815
-183
-987
-216
+368
+652
+540
+685
 ticks-per-day-night
 ticks-per-day-night
 0
@@ -891,10 +894,10 @@ NIL
 HORIZONTAL
 
 SWITCH
-812
-239
-922
-272
+961
+24
+1071
+57
 show-age
 show-age
 0
@@ -902,10 +905,10 @@ show-age
 -1000
 
 SLIDER
-804
-379
-976
-412
+1114
+57
+1286
+90
 maximumNrOfChildren
 maximumNrOfChildren
 0
