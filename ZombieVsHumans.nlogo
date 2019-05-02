@@ -718,6 +718,7 @@ end
 ;end
 
 ;JSN
+;NOA
 ;to group-up
 ;  let zom count zombies in-radius vision-radius
 ;  let unassigned zombies
@@ -774,7 +775,8 @@ end
 ; |<SÄR>  | Julian Wijkström
 ; |<OEA>  | Oskar Erik Adolfsson
 ; |<CVLA> | Chippen Vlahija
-; |<AAR   | Ahmed Abdulkader
+; |<AAR>  | Ahmed Abdulkader
+; |<NOA>  | Nasra Omar Ali
 ; |----------------------------------------------------
 
 ; #################################################################################################################
