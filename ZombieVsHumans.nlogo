@@ -61,17 +61,21 @@ end
 
 ; ******************* COMMON FUNCTIONS PART ********
 ;Functions shared between zombies and humans
-to set-night-day  ;JOD & MNM
+to set-night-day  ;JOD & MNM & PNO
   let counter ticks mod ticks-per-day-night
   if (counter < floor((ticks-per-day-night / 2))) [
-    ;show "day"
+
     set timeOfDay "day"
-    ask patches with [pcolor = black] [set pcolor grey]
   ]
   if (counter > floor((ticks-per-day-night / 2))+ 1) [
-    ;show "night"
+
     set timeOfDay "night"
-    ask patches with [pcolor = grey] [set pcolor black]
+  ]
+  if (timeOfDay = "night")[
+    ask patches with [49 > pcolor and pcolor > 41] [set pcolor ((pcolor + 41) / 2)]
+  ]
+  if (timeOfDay = "day")[
+          ask patches with [49 > pcolor and pcolor > 41] [set pcolor ((pcolor + 45) / 2)]
   ]
 end
 
