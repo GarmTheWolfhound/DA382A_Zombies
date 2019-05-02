@@ -189,10 +189,10 @@ to-report family[maleP femaleP maleID femaleID] ;MNM & AKB
     report 1 ;Initial humans, allowed to breed
   ]
   ifelse (item 0 maleP = item 0 femaleP) or (item 1 maleP = item 1 femaleP) or (femaleID = item 0 maleP) or (maleID = item 1 femaleP)[
-    show "same parents, don't breed"
+
     report 0 ;same parents don't breed
   ] [
-    show "diffrent parents, allowed to breed"
+
     report 1 ;diffrent parents, allowed to breed
   ]
 end
@@ -440,17 +440,15 @@ to alert
       ;Den här koden låter oss inte hitta ett annat target om det behövs
       if(helpingZombie != nobody)[
         face helpingZombie
-        show helpingZombie
 
         ask helpingZombie [
           if(target != nobody) [
-            ifelse(([distance myself] of target) < ([distance myself] of zomToHelp))[
+            ifelse((([distance myself] of target) < ([distance myself] of zomToHelp)) and (energy > 0))[
               face target
+              set pcolor blue
             ][
               face zomToHelp
             ]
-
-
           ]
           if(target = nobody) [
             face myself
@@ -522,10 +520,10 @@ to eat-human
             set size 3
             set energy energy-start-zombies
             set eatTimer 4
-            show "new zombie cant eat"
+
           ]
           set eatTimer 4
-          show "human eaten"
+
           set energy energy + zombies-energy-gain
           if energy > 100 [
             set energy 100
@@ -713,7 +711,7 @@ initial-number-zombies
 initial-number-zombies
 1
 50
-10.0
+5.0
 1
 1
 NIL
@@ -794,7 +792,7 @@ reproduction-age
 reproduction-age
 0
 100
-10.0
+5.0
 1
 1
 NIL
@@ -824,7 +822,7 @@ energy-start-zombies
 energy-start-zombies
 0
 200
-50.0
+100.0
 1
 1
 NIL
