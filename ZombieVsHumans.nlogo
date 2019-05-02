@@ -38,7 +38,7 @@ to setup
   setup-humans
   setup-zombies
   ; set the bakground to yellow
-  ask patches [set pcolor yellow]
+  ask patches [set pcolor grey]
   reset-ticks
 end
 ; **************************
@@ -56,10 +56,8 @@ to go
   if count humans > 500 [stop]
   if count zombies > 500 [stop]
   if not any? humans [stop]
-  if not any? zombies [stop]
 end
 ; **************************
-
 
 ; ******************* COMMON FUNCTIONS PART ********
 ;Functions shared between zombies and humans
@@ -554,6 +552,7 @@ to move-zombies[State]
         if energy < 1 [
           forward zombie-speed-min
         ]
+
       ]
       show-energy
       alert
@@ -561,6 +560,7 @@ to move-zombies[State]
       eat-human
       set-speed
       ;communicate
+
     ]
   ]
 end
@@ -598,10 +598,10 @@ to alert
           if(target != nobody) [
             ifelse((([distance myself] of target) < ([distance myself] of zomToHelp)) and (energy > 0))[
               face target
-              set pcolor blue
+              if Show-Zombie-comms [set pcolor blue]
             ][
               face zomToHelp
-              set pcolor orange
+              if Show-Zombie-comms [set pcolor orange]
             ]
           ]
           if(target = nobody) [
@@ -615,12 +615,12 @@ to alert
       if(zomVisionRadius >= 2) [ ;Finns inte tillräckligt med zombies för att hjälpa
         if target != nobody [ ;Tänkt att låta oss se target, men triggas inte. Vore bra för proaktivt tänkande
           face target
-          set pcolor brown
+          if Show-Zombie-comms [set pcolor brown]
         ]
       ]
       if(zomVisionRadius = 1) [ ;Finns inte någon zombie som kan hjälpa
         set heading heading - 180
-        set pcolor green
+        if Show-Zombie-comms [set pcolor green]
       ]
     ]
   ]
@@ -1008,7 +1008,7 @@ NIL
 T
 OBSERVER
 NIL
-1
+5
 NIL
 NIL
 1
@@ -1025,7 +1025,7 @@ T
 T
 OBSERVER
 NIL
-2
+G
 NIL
 NIL
 0
@@ -1069,7 +1069,7 @@ zombie-speed-min
 zombie-speed-min
 0
 1
-0.2
+0.5
 0.01
 1
 NIL
@@ -1132,7 +1132,7 @@ NIL
 T
 OBSERVER
 NIL
-3
+F
 NIL
 NIL
 1
@@ -1151,6 +1151,17 @@ eatingTime
 1
 NIL
 HORIZONTAL
+
+SWITCH
+1114
+224
+1285
+257
+Show-Zombie-comms
+Show-Zombie-comms
+0
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?
