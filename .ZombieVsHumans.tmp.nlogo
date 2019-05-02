@@ -56,7 +56,7 @@ to go
   if count humans > 500 [stop]
   if count zombies > 500 [stop]
   if not any? humans [stop]
-  if not any? zombies [stop]
+
 end
 ; **************************
 
