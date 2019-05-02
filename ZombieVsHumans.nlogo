@@ -11,7 +11,7 @@
 
 
 ; ************* GLOBAL VARIABLES *****************
-globals [age-counter timeOfDay]
+globals [age-counter timeofday]
 
 ; *****************************
 
@@ -25,20 +25,20 @@ breed [ humans human ]
 
 ; ************* AGENT-SPECIFIC VARIABLES *********
 turtles-own []
-zombies-own [energy target speedcoefficient eatTimershow eatTimer myGroup inDanger]
-humans-own [latest-birth age parents nrOfChildren HState]
+zombies-own [energy target speedcoefficient eatTimer myGroup inDanger]
+humans-own [latest-birth age parents nrOfChildren HState my-group]
 
 ; ***************************
 
 
 ; ******************* SETUP PART *****************
-; initiates the agentsset target min-one-of other zombies in-radius vision-radius [distance myself]set target min-one-of other zombies in-radius vision-radius [distance myself]
+; initiates the agents
 to setup
   clear-all
   setup-humans
   setup-zombies
   ; set the bakground to yellow
-  ask patches [set pcolor yellow]
+  ask patches [set pcolor grey]
   reset-ticks
 end
 ; **************************
@@ -55,7 +55,7 @@ to go
   set-night-day
   if count humans > 500 [stop]
   if count zombies > 500 [stop]
-
+  if not any? humans [stop]
 end
 ; **************************
 
@@ -64,14 +64,14 @@ end
 to set-night-day  ;JOD & MNM
   let counter ticks mod ticks-per-day-night
   if (counter < floor((ticks-per-day-night / 2))) [
-
+    ;show "day"
     set timeOfDay "day"
-    ask patches with [pcolor = black] [set pcolor yellow]
+    ask patches with [pcolor = black] [set pcolor grey]
   ]
   if (counter > floor((ticks-per-day-night / 2))+ 1) [
-
+    ;show "night"
     set timeOfDay "night"
-    ask patches with [pcolor = yellow] [set pcolor black]
+    ask patches with [pcolor = grey] [set pcolor black]
   ]
 end
 
@@ -102,6 +102,7 @@ to setup-humans ;MNM & AKB & AJA
     set age random setup-age
     set HState "Wander"
     set parents [-1 -1]
+    set my-group (list who -1 -1 -1)
     ;set size 2  ; easier to see
     setxy random-xcor random-ycor
   ]
@@ -114,12 +115,13 @@ to setup-humans ;MNM & AKB & AJA
     set latest-birth 0
     set nrOfChildren 0
     set parents [-1 -1]
+    set my-group (list who -1 -1 -1)
     ;set size 2  ; easier to see
     setxy random-xcor random-ycor
   ]
-  ask humans with [age < 2 * reproduction-age][set size 1]
-  ask humans with [age >= 2 * reproduction-age and age < 5 * reproduction-age][set size 1.5]
-  ask humans with [age >= 5 * reproduction-age ][set size 2]
+    ask humans with [age < 2 * reproduction-age][set size 1]
+    ask humans with [age >= 2 * reproduction-age and age < 5 * reproduction-age][set size 1.5]
+    ask humans with [age >= 5 * reproduction-age ][set size 2]
 end
 ; end setup human agents ----------------------------
 
@@ -180,19 +182,19 @@ to reproduce-humans ;MNM
 end
 
 to-report family[maleP femaleP maleID femaleID] ;MNM & AKB
-                                                ;  show "MALE"
-                                                ;  show maleP
-                                                ;  show "FEMALE"
-                                                ;  show femaleP
+;  show "MALE"
+;  show maleP
+;  show "FEMALE"
+;  show femaleP
   if (item 0 maleP = -1 and item 1 maleP = -1) or (item 0 femaleP = -1 and item 1 femaleP = -1) [
     ;show "initial humans, breed"
     report 1 ;Initial humans, allowed to breed
   ]
   ifelse (item 0 maleP = item 0 femaleP) or (item 1 maleP = item 1 femaleP) or (femaleID = item 0 maleP) or (maleID = item 1 femaleP)[
-    show "same parents, don't breed"
+    ;show "same parents, don't breed"
     report 0 ;same parents don't breed
   ] [
-    show "diffrent parents, allowed to breed"
+    ;show "diffrent parents, allowed to breed"
     report 1 ;diffrent parents, allowed to breed
   ]
 end
@@ -204,7 +206,18 @@ to-report zombInArea[person] ; Return whether there is a zombie, human or both n
   ]
 
   report nobody
+end
 
+to-report zombsInArea[person] ; Return whether there is a zombies, human or both nearby. DAB & MNM
+  let zomb nobody
+  ask human person [
+    set zomb zombies in-radius vision-radius
+  ]
+  if zomb != nobody [
+    report zomb
+  ]
+
+  report nobody
 end
 
 to-report humanInArea[person] ; Return whether there is a zombie, human or both nearby. DAB & MNM
@@ -241,7 +254,7 @@ to move-humans ;MNM
     ;[ set label "" ]
 
   ]
-  if Tactics = "Step4" [
+  if Tactics = "Step3" [
     ask humans [
       let zomb min-one-of zombies in-radius vision-radius [distance myself]
       ifelse zomb != nobody [
@@ -279,8 +292,9 @@ to change-state ; MNM & DAB
 
       ifelse zombInArea(who) != nobody [
         set HState "Flee"
+        ;Flee2(zombsInArea(who))
         Flee(zombInArea(who))
-        ] [ifelse humanInArea(who) != nobody [
+      ] [ifelse humanInArea(who) != nobody [
           set HState "Group"
           Group(humanInArea(who))
         ] [Wander]
@@ -290,8 +304,8 @@ to change-state ; MNM & DAB
 
     [ifelse HState = "Flee" [
       ifelse zombInArea(who) != nobody [
+        ;Flee2(zombsInArea(who))
         Flee(zombInArea(who))
-
       ] [set HState "Wander"
         Wander]
 
@@ -301,10 +315,10 @@ to change-state ; MNM & DAB
         ifelse zombInArea(who) != nobody [
 
           set HState "Flee"
+          ;Flee2(zombsInArea(who))
           Flee(zombInArea(who))
 
-
-          ] [ifelse humanInArea(who) != nobody [
+        ] [ifelse humanInArea(who) != nobody [
             Group(humanInArea(who))
 
         ][set HState "Wander" Wander]]
@@ -318,16 +332,41 @@ to change-state ; MNM & DAB
 end
 
 to Group [person] ; MNM & DAB
-  set heading towards person
-  right random 5
-  left random 5
+;  set heading towards person
+;  right random 5
+;  left random 5
+  group-me
+  if groupSpotAvailiable(my-group) != 1[  ;; Go "home"
+    get-home
+  ]
   forward 1
 end
 to Flee [zomb] ; MNM & DAB
-               ;run away from zombie
+  ;run away from zombie
   set heading towards zomb
   ;right 180
   right 160 + random 20
+  forward 1
+end
+to Flee2 [zombs] ; MNM
+  let x 0
+  let y 0
+  let c 1
+  ;show (word "myself x " xcor " y " ycor)
+  set zombs sort-on [(- distance myself)] zombs ;- distance myself to make the furthest zombie first
+  foreach zombs [ zomb ->
+    ask zomb [
+      set x (x + ( (c / 2) * xcor))
+      set y (y + ( (c / 2) * ycor))
+      set c (c + 1)
+      ;show (word "X " x " Y " y)
+    ]
+  ]
+  set x (x / c)
+  set y (y / c)
+  ;show (word "FINAL X " x " Y " y)
+  facexy x y
+  right 180
   forward 1
 end
 to Wander ; MNM & DAB
@@ -335,12 +374,123 @@ to Wander ; MNM & DAB
   left random 30
   forward 1
 end
+
+;SCN & BJZ
+to group-me
+  if (groupSpotAvailiable(my-group) > 0) [
+    let my-g my-group
+    let notMyGroup humans with[my-group != my-G]
+    let humansNear one-of other notMyGroup in-radius 6
+    let humanNear-EmptySpots 0
+    let humanNear-Group  0
+    if humansNear != nobody[
+      ask humansNear[
+        set humanNear-EmptySpots groupSpotAvailiable(my-group)
+        set humanNear-Group my-group
+      ]
+      if (4 - groupSpotAvailiable(my-group)) + (4 - humanNear-EmptySpots) <= 4 [
+        mergeGroups(my-group)(humanNear-Group)
+      ]
+    ]
+  ]
+end
+;SCN & BJZ
+to kill-me
+  if item 0 my-group = who[
+    set my-group replace-item 0 my-group item 1 my-group
+    set my-group replace-item 1 my-group item 2 my-group
+    set my-group replace-item 2 my-group item 3 my-group
+    set my-group replace-item 3 my-group -1
+  ]
+  if item 1 my-group = who[
+    set my-group replace-item 1 my-group item 2 my-group
+    set my-group replace-item 2 my-group item 3 my-group
+    set my-group replace-item 3 my-group -1
+  ]
+  if item 2 my-group = who[
+    set my-group replace-item 2 my-group item 3 my-group
+    set my-group replace-item 3 my-group -1
+  ]
+  if item 3 my-group = who[
+    set my-group replace-item 3 my-group -1
+  ]
+  let my-g my-group
+  foreach my-group[ n ->
+    if n != -1[
+      if( turtle n != nobody)[
+        ask turtle n[
+
+          set my-group my-g
+        ]
+      ]
+    ]
+  ]
+  die
+end
+;SCN & BJZ
+to mergeGroups[group-List1 group-List2]
+  let newList (list -1 -1 -1 -1)
+  let newListIndex  0
+  let itterator 3 - groupSpotAvailiable(group-List1)
+  while [itterator >= 0][
+    set newList replace-item newListIndex newList item itterator group-List1
+    set itterator itterator - 1
+    set newListIndex newListIndex + 1
+  ]
+  set itterator 3 - groupSpotAvailiable(group-List2)
+  while [itterator >= 0][
+    set newList replace-item newListIndex newList item itterator group-List2
+    set itterator itterator - 1
+    set newListIndex newListIndex + 1
+  ]
+  foreach newlist[ n ->
+    if n != -1[
+      if( turtle n != nobody)[
+        ask turtle n[
+          set my-group newlist
+        ]
+      ]
+    ]
+  ]
+end
+;SCN & BJZ
+to-report groupSpotAvailiable[group-list]
+  let emptySpots 0
+  if item 0 group-list = -1[
+    set emptySpots emptySpots + 1
+  ]
+  if item 1 group-list = -1[
+    set emptySpots emptySpots + 1
+  ]
+  if item 2 group-list = -1[
+    set emptySpots emptySpots + 1
+  ]
+  if item 3 group-list = -1[
+    set emptySpots emptySpots + 1
+  ]
+  report emptySpots
+end
+;SCN & BJZ
+;; Group the turtles in the patch
+to get-home
+  let my-g my-group
+  let Hgroup humans with [my-group = my-g]
+  let person item 0 my-g
+  if turtle person != nobody[
+    face turtle person
+    ask turtle person[
+    rt random 100
+    lt random 100
+  ]
+  ]
+
+end
 ; end human agents procedures/reporters -------------
 
 ; **************************
 
 ; #################################################################################################################
-; **************** ZOMBIE AGENTS PART ************
+; ************** ZOMBIE AGENTS PART **********
 ;
 ; --setup zombie agents --------------------------------
 to setup-zombies
@@ -440,17 +590,15 @@ to alert
       ;Den här koden låter oss inte hitta ett annat target om det behövs
       if(helpingZombie != nobody)[
         face helpingZombie
-        show helpingZombie
-
         ask helpingZombie [
           if(target != nobody) [
-            ifelse(([distance myself] of target) < ([distance myself] of zomToHelp))[
+            ifelse((([distance myself] of target) < ([distance myself] of zomToHelp)) and (energy > 0))[
               face target
+              set pcolor blue
             ][
               face zomToHelp
+              set pcolor orange
             ]
-
-
           ]
           if(target = nobody) [
             face myself
@@ -463,13 +611,12 @@ to alert
       if(zomVisionRadius >= 2) [ ;Finns inte tillräckligt med zombies för att hjälpa
         if target != nobody [ ;Tänkt att låta oss se target, men triggas inte. Vore bra för proaktivt tänkande
           face target
-          ;set pcolor red
+          set pcolor brown
         ]
       ]
-
       if(zomVisionRadius = 1) [ ;Finns inte någon zombie som kan hjälpa
         set heading heading - 180
-        ;set pcolor green
+        set pcolor green
       ]
     ]
   ]
@@ -521,11 +668,10 @@ to eat-human
             ask hum [die]
             set size 3
             set energy energy-start-zombies
-            set eatTimer 4
-            show "new zombie cant eat"
+            set eatTimer eatingTime + 1
           ]
-          set eatTimer 4
-          show "human eaten"
+          set eatTimer eatingTime + 1
+
           set energy energy + zombies-energy-gain
           if energy > 100 [
             set energy 100
@@ -609,8 +755,10 @@ end
 ; |3-digit|  Name
 ; |-------|--------------------------------------------
 ; | <MNM> | Marcus Nordström
-; |       |
-; |       |
+; | <AKB> | Anna Brondin
+; | <AJA> | Aziz Jashari
+; | <DHL> | Daniel Lone
+; | <DAB> | Daniel Abella
 ; |----------------------------------------------------
 ; -----------------------------------------------------
 
@@ -620,22 +768,21 @@ end
 ; |-------|--------------------------------------------
 ; |<JOD>  | Jake O´Donnell
 ; |<SÄR>  | Julian Wijkström
-; | <OEA> | Oskar Erik Adolfsson
+; |<OEA>  | Oskar Erik Adolfsson
 ; |<CVLA> | Chippen Vlahija
 ; |<AAR   | Ahmed Abdulkader
 ; |----------------------------------------------------
-; -----------------------------------------------------
 
 ; #################################################################################################################
 @#$#@#$#@
 GRAPHICS-WINDOW
-184
-58
-738
-613
+214
+10
+1076
+537
 -1
 -1
-16.55
+14.0
 1
 10
 1
@@ -645,85 +792,126 @@ GRAPHICS-WINDOW
 1
 1
 1
--16
-16
--16
-16
+-30
+30
+-18
+18
 1
 1
 1
 ticks
 30.0
 
-BUTTON
+SLIDER
+1113
+27
+1285
+60
+setup-age
+setup-age
+0
+100
+9.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
 17
+250
+189
+283
+ticks-per-year
+ticks-per-year
+0
+100
+70.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1113
+181
+1285
+214
+reproduction-age
+reproduction-age
+0
+100
+5.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1115
+64
+1287
+97
+maximum-age
+maximum-age
+0
+100
+40.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+18
+212
+190
+245
+vision-radius
+vision-radius
+0
 10
-80
-43
-NIL
-setup
-NIL
-1
-T
-OBSERVER
-NIL
-1
-NIL
-NIL
-1
-
-BUTTON
-95
-11
-158
-44
-NIL
-go
-T
-1
-T
-OBSERVER
-NIL
-2
-NIL
-NIL
-0
-
-SLIDER
-741
-58
-913
-91
-initial-number-humans
-initial-number-humans
-0
-50
-30.0
+5.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-6
-57
-178
-90
-initial-number-zombies
-initial-number-zombies
-1
+18
+87
+190
+120
+initial-number-humans
+initial-number-humans
+0
 50
-10.0
+20.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-8
-94
-180
-127
+19
+126
+191
+159
+initial-number-zombies
+initial-number-zombies
+0
+50
+5.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1309
+66
+1481
+99
 zombies-energy-gain
 zombies-energy-gain
 0
@@ -734,12 +922,59 @@ zombies-energy-gain
 NIL
 HORIZONTAL
 
+SLIDER
+1307
+28
+1479
+61
+energy-start-zombies
+energy-start-zombies
+0
+200
+80.0
+1
+1
+NIL
+HORIZONTAL
+
+SWITCH
+1115
+103
+1226
+136
+Show-age
+Show-age
+0
+1
+-1000
+
+CHOOSER
+18
+163
+156
+208
+Tactics
+Tactics
+"Step2" "Step3" "Step4"
+2
+
+SWITCH
+1308
+101
+1443
+134
+Show-energy?
+Show-energy?
+0
+1
+-1000
+
 PLOT
-757
-218
-1260
-613
-plot 1
+1087
+309
+1387
+527
+Population
 NIL
 NIL
 0.0
@@ -750,207 +985,105 @@ true
 false
 "" ""
 PENS
-"Zombies" 1.0 0 -10899396 true "" "plot count zombies"
+"Zombies" 1.0 0 -13840069 true "" "plot count zombies"
 "Women" 1.0 0 -2064490 true "" "plot count humans with [color = pink]"
-"Men" 1.0 0 -13345367 true "" "plot count humans with [color = blue]"
+"Men" 1.0 0 -14070903 true "" "plot count humans with [color = blue]"
 "pen-3" 1.0 0 -7500403 true "" "plot count humans"
 
-SLIDER
-923
-138
-1095
-171
-setup-age
-setup-age
-0
-100
-5.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-367
-614
-539
-647
-ticks-per-year
-ticks-per-year
-0
-100
-50.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-925
-59
-1097
-92
-reproduction-age
-reproduction-age
-0
-100
-10.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-925
-99
-1097
-132
-maximum-age
-maximum-age
-0
-100
-25.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-6
-133
-178
-166
-energy-start-zombies
-energy-start-zombies
-0
-200
-50.0
-1
-1
-NIL
-HORIZONTAL
-
-CHOOSER
-23
-305
-161
-350
-Tactics
-Tactics
-"Step2" "Step3" "Step4"
-2
-
-SWITCH
-24
-259
-159
-292
-Show-energy?
-Show-energy?
-0
-1
--1000
-
-SLIDER
-367
-689
-539
-722
-vision-radius
-vision-radius
-0
-10
-5.0
-1
-1
-NIL
-HORIZONTAL
-
-MONITOR
-406
-11
-508
-56
-NIL
-count humans
-17
-1
-11
-
-MONITOR
-297
-11
-401
-56
-NIL
-count zombies
-17
-1
-11
-
-SLIDER
-6
-177
-178
-210
-zombie-speed-min
-zombie-speed-min
-0
-1
-0.2
-0.01
-1
-NIL
-HORIZONTAL
-
-SLIDER
-6
-215
-178
-248
-zombie-speed-max
-zombie-speed-max
-0
-1
-0.7
-0.01
-1
-NIL
-HORIZONTAL
-
-MONITOR
-518
-10
-575
-55
-total
-(count humans) + (count zombies)
-17
-1
-11
-
 BUTTON
-169
-12
-232
-45
-go once
-go
+18
+51
+81
+84
+NIL
+setup
 NIL
 1
 T
 OBSERVER
 NIL
-3
+5
+NIL
+NIL
+1
+
+BUTTON
+89
+50
+152
+83
+NIL
+go
+T
+1
+T
+OBSERVER
+NIL
+G
 NIL
 NIL
 0
 
 SLIDER
-368
-652
-540
-685
+1113
+141
+1285
+174
+maximumNrOfChildren
+maximumNrOfChildren
+0
+15
+5.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1307
+142
+1479
+175
+zombie-speed-max
+zombie-speed-max
+0
+1
+0.75
+0.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1305
+183
+1477
+216
+zombie-speed-min
+zombie-speed-min
+0
+1
+0.5
+0.01
+1
+NIL
+HORIZONTAL
+
+TEXTBOX
+22
+32
+172
+50
+Commons
+11
+0.0
+1
+
+SLIDER
+18
+289
+190
+322
 ticks-per-day-night
 ticks-per-day-night
 0
@@ -961,26 +1094,52 @@ ticks-per-day-night
 NIL
 HORIZONTAL
 
-SWITCH
-961
-24
-1071
-57
-show-age
-show-age
-0
+TEXTBOX
+1307
+10
+1457
+28
+Zombies\n
+11
+0.0
 1
--1000
+
+TEXTBOX
+1113
+10
+1263
+28
+Humans\n
+11
+0.0
+1
+
+BUTTON
+89
+13
+164
+46
+go once
+go
+NIL
+1
+T
+OBSERVER
+NIL
+F
+NIL
+NIL
+1
 
 SLIDER
-1114
-57
-1286
-90
-maximumNrOfChildren
-maximumNrOfChildren
+1307
+222
+1479
+255
+eatingTime
+eatingTime
 0
-100
+10
 10.0
 1
 1
