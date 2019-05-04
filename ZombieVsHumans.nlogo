@@ -1003,7 +1003,7 @@ Tactics
 SWITCH
 1308
 101
-1443
+1476
 134
 Show-energy?
 Show-energy?
@@ -1012,10 +1012,10 @@ Show-energy?
 -1000
 
 PLOT
-1087
-309
-1387
-527
+1086
+317
+1386
+535
 Population
 NIL
 NIL
@@ -1174,10 +1174,10 @@ NIL
 1
 
 SLIDER
-1307
-222
-1479
-255
+1397
+264
+1434
+414
 eatingTime
 eatingTime
 0
@@ -1186,13 +1186,13 @@ eatingTime
 1
 1
 NIL
-HORIZONTAL
+VERTICAL
 
 SWITCH
-1114
-224
-1285
-257
+1306
+221
+1479
+254
 Show-Zombie-comms
 Show-Zombie-comms
 0
@@ -1200,19 +1200,19 @@ Show-Zombie-comms
 -1000
 
 SLIDER
-1110
-266
-1282
-299
+1443
+263
+1480
+413
 maxDangerTimer
 maxDangerTimer
 1
 50
-10.0
+15.0
 1
 1
 NIL
-HORIZONTAL
+VERTICAL
 
 @#$#@#$#@
 ## WHAT IS IT?
