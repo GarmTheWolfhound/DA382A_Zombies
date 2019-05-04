@@ -25,7 +25,7 @@ breed [ humans human ]
 
 ; ************* AGENT-SPECIFIC VARIABLES *********
 turtles-own []
-zombies-own [energy target speedcoefficient eatTimer myGroup inDanger]
+zombies-own [energy target speedcoefficient eatTimer myGroup inDanger dangerTimer target-X target-Y]
 humans-own [latest-birth age parents nrOfChildren HState my-group]
 
 ; ***************************
@@ -505,6 +505,10 @@ to setup-zombies
     set energy energy-start-zombies
     set speedcoefficient (zombie-speed-max - zombie-speed-min) / ln(101)
     setxy random-xcor random-ycor
+    ;Används för jakt grupper
+    set dangerTimer maxDangerTimer ;Ser till att ingen grupp bildas vid start
+    set target-X 0
+    set target-Y 0
   ]
 end
 
@@ -582,21 +586,26 @@ to alert
   let zom count zombies in-radius 1
 
 
-  if(((hum / zom) < 3)) [
+  if(((hum / zom) < 3) and dangerTimer >= maxDangerTimer) [
     set inDanger 0
   ]
 
   if(((hum / zom) >= 3)) [
     set inDanger 1
+    set dangerTimer 0
+    ;Sparar koordinat för närmaste människa
+    set target-X [xcor] of target
+    set target-Y [ycor] of target
     let zomToHelp self
     let helpingZombie min-one-of other zombies in-radius vision-radius [distance myself]
-    if(((hum / zomVisionRadius) < 3)) [
+
+    if(((hum / zomVisionRadius) < 3)) [ ; går att jaga människor
       ;Den här koden låter oss inte hitta ett annat target om det behövs
       if(helpingZombie != nobody)[
         face helpingZombie
         ask helpingZombie [
           if(target != nobody) [
-            ifelse((([distance myself] of target) < ([distance myself] of zomToHelp)) and (energy > 0))[
+            ifelse((([distance myself] of target) < ([distance myself] of zomToHelp)) and (energy > 0))[;Det här borde vara samma som [distance zomToHelp] of [target] of helpingZombie < 0. TA UPP!!!
               face target
               if Show-Zombie-comms [set pcolor blue]
             ][
@@ -613,8 +622,9 @@ to alert
 
     if(((hum / zomVisionRadius) >= 3))[
       if(zomVisionRadius >= 2) [ ;Finns inte tillräckligt med zombies för att hjälpa
-        if target != nobody [ ;Tänkt att låta oss se target, men triggas inte. Vore bra för proaktivt tänkande
-          face target
+        face helpingZombie
+        if target != nobody [
+          ;face target
           if Show-Zombie-comms [set pcolor brown]
         ]
       ]
@@ -623,6 +633,31 @@ to alert
         if Show-Zombie-comms [set pcolor green]
       ]
     ]
+  ]
+
+  ;OEA
+  if((dangerTimer > 0) and (dangerTimer <= maxDangerTimer))[ ;låter Zombies jaga i grupp
+    if Show-Zombie-comms [set pcolor cyan - 2]
+
+    ifelse(target = nobody)[
+      facexy target-X target-Y
+      ask other zombies in-radius vision-radius[
+        face myself
+      ]
+    ][
+      face target
+      ask other zombies in-radius vision-radius[
+        face myself
+
+;        Det här orsakar en crash
+;        ifelse([distance myself] of self > [distance [target] of myself] of self)[
+;          set heading towards [target] of myself
+;        ][
+;          set heading towards myself
+;        ]
+      ]
+    ]
+    ask other zombies in-radius vision-radius[if Show-Zombie-comms [set pcolor cyan + 2]]
   ]
 
 end
@@ -747,6 +782,7 @@ end
 
 ; --zombie agents main function ----------------------
 to live-zombies
+  ask zombies[set dangerTimer dangerTimer + 1]
   move-zombies(Tactics)
   ; <3-digit initial of programmer for each subfunction of the agent>
 end
@@ -1168,8 +1204,8 @@ SLIDER
 266
 1282
 299
-maxTimeSinceDanger
-maxTimeSinceDanger
+maxDangerTimer
+maxDangerTimer
 1
 50
 10.0
