@@ -1163,6 +1163,21 @@ Show-Zombie-comms
 1
 -1000
 
+SLIDER
+1110
+266
+1282
+299
+maxTimeSinceDanger
+maxTimeSinceDanger
+1
+50
+10.0
+1
+1
+NIL
+HORIZONTAL
+
 @#$#@#$#@
 ## WHAT IS IT?
 
