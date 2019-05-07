@@ -605,7 +605,7 @@ to alert
         face helpingZombie
         ask helpingZombie [
           if(target != nobody) [
-            ifelse((([distance self] of target) < ([distance self] of myself)) and (energy > 0))[;Det här borde vara samma som [distance zomToHelp] of [target] of helpingZombie < 0. TA UPP!!!
+            ifelse((([distance self] of target) < ([distance self] of myself)) and (energy > 0))[
               face target
               if Show-Zombie-comms [set pcolor blue]
             ][
@@ -658,6 +658,8 @@ to alert
       ]
     ]
     ask other zombies in-radius vision-radius[if Show-Zombie-comms [set pcolor cyan + 2]]
+
+    if(target = nobody and ([xcor] of self = target-X and [ycor] of self = target-Y))[set dangerTimer maxDangerTimer];Bryter upp gruppen om mål patch nås och det inte finns någon människa
   ]
 
 end
