@@ -605,7 +605,7 @@ to alert
         face helpingZombie
         ask helpingZombie [
           if(target != nobody) [
-            ifelse((([distance myself] of target) < ([distance myself] of zomToHelp)) and (energy > 0))[;Det här borde vara samma som [distance zomToHelp] of [target] of helpingZombie < 0. TA UPP!!!
+            ifelse((([distance self] of target) < ([distance self] of myself)) and (energy > 0))[;Det här borde vara samma som [distance zomToHelp] of [target] of helpingZombie < 0. TA UPP!!!
               face target
               if Show-Zombie-comms [set pcolor blue]
             ][
@@ -1176,7 +1176,7 @@ NIL
 SLIDER
 1397
 264
-1434
+1430
 414
 eatingTime
 eatingTime
@@ -1202,7 +1202,7 @@ Show-Zombie-comms
 SLIDER
 1443
 263
-1480
+1476
 413
 maxDangerTimer
 maxDangerTimer
