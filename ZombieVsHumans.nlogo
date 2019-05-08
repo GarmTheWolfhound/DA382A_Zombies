@@ -38,7 +38,7 @@ to setup
   setup-humans
   setup-zombies
   ; set the bakground to yellow for graphical day-night
-  ask patches [set pcolor [255 255 0]]
+  ask patches [set pcolor yellow]
   reset-ticks
 end
 ; **************************
@@ -53,7 +53,6 @@ to go
   ;common functions and stop-expressions
   year-counter
   set-night-day
-  visual-day-night-m
   if count humans > 500 [stop]
   if count zombies > 500 [stop]
   if not any? humans [stop]
@@ -70,65 +69,53 @@ to set-night-day  ;JOD & MNM
   if (counter > floor((ticks-per-day-night / 2))+ 1) [
     set timeOfDay "night"
   ]
+  visual-day-night-m
 end
 
 to visual-day-night-m ;PNO
-  ifelse visual-day-night = true [
+  ifelse (visual-day-night = true) [
     let counter ticks mod ticks-per-day-night
     let fractionofday counter / (ticks-per-day-night - 1)
-    ask patches [
-      carefully [
-        let pcolorr (item 0 pcolor)
-        let pcolorg (item 1 pcolor)
-        let pcolorb (item 2 pcolor)
-        if( abs(pcolorr - pcolorg) < 1 and pcolorb = 0) [
-          let absoluteposition (( max-pxcor - pxcor) / ( max-pxcor - min-pxcor))
+    ask patches with [shade-of? pcolor yellow] [
+        let absoluteposition (( max-pxcor - pxcor) / ( max-pxcor - min-pxcor))
 
-          if (0 < fractionofday and fractionofday < 0.25) [; Sunrise
-            if (absoluteposition < fractionofday * 5) [
-              set pcolor (list (((ticks-per-day-night / 4) * pcolorr + 220) / ((ticks-per-day-night / 4) + 1)) (((ticks-per-day-night / 4) * pcolorg + 220) / ((ticks-per-day-night / 4) + 1)) 0 )
-            ]
+        if (0 < fractionofday and fractionofday < 0.25) [; Sunrise
+          if (absoluteposition < fractionofday * 5) [
+            set pcolor (pcolor + (1 / (ticks-per-day-night / 8)))
           ]
-          if (0.25 < fractionofday and fractionofday < 0.5) [; Day
-            set pcolor (list ((pcolorr + 240) / 2) ((pcolorg + 240) / 2) 0 )
-          ]
-          if (0.50 < fractionofday and fractionofday < 0.75) [; Sunset
-            if (absoluteposition < (fractionofday - 0.5) * 5) [
-              set pcolor (list (((ticks-per-day-night / 4) * pcolorr + 120) / ((ticks-per-day-night / 4) + 1)) (((ticks-per-day-night / 4) * pcolorg + 120) / ((ticks-per-day-night / 4) + 1)) 0 )
-            ]
-          ]
-          if (0.75 < fractionofday and fractionofday < 1) [; Night
-            set pcolor (list ((pcolorr + 120) / 2) ((pcolorg + 120) / 2) 0 )
-          ]
-
         ]
-      ] []
-    ]
-  ][
-      ask patches [
-      carefully [
-        let pcolorr (item 0 pcolor)
-        let pcolorg (item 1 pcolor)
-        let pcolorb (item 2 pcolor)
-        if( abs(pcolorr - pcolorg) < 1 and pcolorb = 0) [
-          set pcolor gray]
-      ][]
-    ]
-  ]
-end
-
-to patch-anti-aliasing ;PNO
-  ask patches [
-    carefully [
-      let pcolorr (item 0 pcolor)
-      let pcolorg (item 1 pcolor)
-      let pcolorb (item 2 pcolor)
-      if(abs(pcolorr - pcolorg) < 1 and pcolorb = 0) [
-        if(pxcor != min-pxcor)[
+        if (0.25 < fractionofday and fractionofday < 0.5) [; Day
+          set pcolor ((pcolor + 45) / 2)
+        ]
+        if (0.50 < fractionofday and fractionofday < 0.75) [; Sunset
+          if (absoluteposition < (fractionofday - 0.5) * 5) [
+            set pcolor (pcolor - (1 / (ticks-per-day-night / 8)))
+          ]
+        ]
+        if (0.75 < fractionofday and fractionofday < 1) [; Night
+          set pcolor ((pcolor + 41) / 2)
         ]
       ]
-    ] []
+  ] [
+    ask patches with [shade-of? pcolor yellow] [
+      set pcolor gray]
   ]
+
+  if patch-anti-aliasing = true [patch-anti-aliasing-m]
+end
+
+to patch-anti-aliasing-m ;PNO
+  let xcoordinates max-pxcor + abs(min-pxcor)
+  let aliasing-counter min-pxcor + 1
+  repeat (xcoordinates - 2) [
+    ask patches with [pxcor = aliasing-counter] [
+      if(shade-of? yellow pcolor) [
+          set pcolor (((sum [pcolor] of neighbors with [shade-of? pcolor yellow]) + pcolor) / 9)
+      ]
+    ]
+    set aliasing-counter (aliasing-counter + 1)
+  ]
+  set aliasing-counter 0
 end
 
 
@@ -1272,12 +1259,23 @@ NIL
 VERTICAL
 
 SWITCH
-459
-572
-652
-605
+28
+328
+172
+361
 visual-day-night
 visual-day-night
+0
+1
+-1000
+
+SWITCH
+23
+362
+180
+395
+patch-anti-aliasing
+patch-anti-aliasing
 0
 1
 -1000
