@@ -81,7 +81,7 @@ to visual-day-night-m ;PNO
 
         if (0 < fractionofday and fractionofday < 0.25) [; Sunrise
           if (absoluteposition < fractionofday * 5) [
-            set pcolor (pcolor + (1 / (ticks-per-day-night / 8)))
+            set pcolor (pcolor + (4 / (ticks-per-day-night / 4)))
           ]
         ]
         if (0.25 < fractionofday and fractionofday < 0.5) [; Day
@@ -89,7 +89,7 @@ to visual-day-night-m ;PNO
         ]
         if (0.50 < fractionofday and fractionofday < 0.75) [; Sunset
           if (absoluteposition < (fractionofday - 0.5) * 5) [
-            set pcolor (pcolor - (1 / (ticks-per-day-night / 8)))
+            set pcolor (pcolor - (4 / (ticks-per-day-night / 4)))
           ]
         ]
         if (0.75 < fractionofday and fractionofday < 1) [; Night
@@ -101,7 +101,9 @@ to visual-day-night-m ;PNO
       set pcolor gray]
   ]
 
-  if patch-anti-aliasing = true [patch-anti-aliasing-m]
+  if patch-anti-aliasing > 0 [
+    repeat patch-anti-aliasing [patch-anti-aliasing-m]
+  ]
 end
 
 to patch-anti-aliasing-m ;PNO
@@ -110,7 +112,10 @@ to patch-anti-aliasing-m ;PNO
   repeat (xcoordinates - 2) [
     ask patches with [pxcor = aliasing-counter] [
       if(shade-of? yellow pcolor) [
-          set pcolor (((sum [pcolor] of neighbors with [shade-of? pcolor yellow]) + pcolor) / 9)
+        let temppcolor (((sum [pcolor] of (neighbors with [shade-of? pcolor yellow])) + pcolor) / 9)
+        if (shade-of? temppcolor yellow) [
+          set pcolor temppcolor
+        ]
       ]
     ]
     set aliasing-counter (aliasing-counter + 1)
@@ -1269,16 +1274,20 @@ visual-day-night
 1
 -1000
 
-SWITCH
-23
-362
-180
-395
+SLIDER
+15
+365
+187
+398
 patch-anti-aliasing
 patch-anti-aliasing
 0
+16
+7.0
 1
--1000
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
