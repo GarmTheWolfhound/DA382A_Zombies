@@ -38,7 +38,7 @@ to setup
   setup-humans
   setup-zombies
   ; set the bakground to yellow for graphical day-night
-  ask patches [set pcolor yellow]
+  ask patches [set pcolor [255 255 0]]
   reset-ticks
 end
 ; **************************
@@ -53,6 +53,7 @@ to go
   ;common functions and stop-expressions
   year-counter
   set-night-day
+  visual-day-night-m
   if count humans > 500 [stop]
   if count zombies > 500 [stop]
   if not any? humans [stop]
@@ -61,44 +62,75 @@ end
 
 ; ******************* COMMON FUNCTIONS PART ********
 ;Functions shared between zombies and humans
-to set-night-day  ;JOD & MNM & PNO
+to set-night-day  ;JOD & MNM
   let counter ticks mod ticks-per-day-night
-  let fractionofday counter / (ticks-per-day-night - 1)
   if (counter < floor((ticks-per-day-night / 2))) [
     set timeOfDay "day"
   ]
   if (counter > floor((ticks-per-day-night / 2))+ 1) [
     set timeOfDay "night"
   ]
-  if (0 < fractionofday and fractionofday < 0.25) [; Sunrise
-    ask patches with [46 > pcolor and pcolor > 41] [
-      let absoluteposition (( max-pxcor - pxcor) / ( max-pxcor - min-pxcor))
-      if (absoluteposition < fractionofday * 5) [
-      set pcolor (pcolor + ((45 - pcolor) * fractionofday))]
+end
+
+to visual-day-night-m ;PNO
+  ifelse visual-day-night = true [
+    let counter ticks mod ticks-per-day-night
+    let fractionofday counter / (ticks-per-day-night - 1)
+    ask patches [
+      carefully [
+        let pcolorr (item 0 pcolor)
+        let pcolorg (item 1 pcolor)
+        let pcolorb (item 2 pcolor)
+        if( abs(pcolorr - pcolorg) < 1 and pcolorb = 0) [
+          let absoluteposition (( max-pxcor - pxcor) / ( max-pxcor - min-pxcor))
+
+          if (0 < fractionofday and fractionofday < 0.25) [; Sunrise
+            if (absoluteposition < fractionofday * 5) [
+              set pcolor (list (((ticks-per-day-night / 4) * pcolorr + 220) / ((ticks-per-day-night / 4) + 1)) (((ticks-per-day-night / 4) * pcolorg + 220) / ((ticks-per-day-night / 4) + 1)) 0 )
+            ]
+          ]
+          if (0.25 < fractionofday and fractionofday < 0.5) [; Day
+            set pcolor (list ((pcolorr + 240) / 2) ((pcolorg + 240) / 2) 0 )
+          ]
+          if (0.50 < fractionofday and fractionofday < 0.75) [; Sunset
+            if (absoluteposition < (fractionofday - 0.5) * 5) [
+              set pcolor (list (((ticks-per-day-night / 4) * pcolorr + 120) / ((ticks-per-day-night / 4) + 1)) (((ticks-per-day-night / 4) * pcolorg + 120) / ((ticks-per-day-night / 4) + 1)) 0 )
+            ]
+          ]
+          if (0.75 < fractionofday and fractionofday < 1) [; Night
+            set pcolor (list ((pcolorr + 120) / 2) ((pcolorg + 120) / 2) 0 )
+          ]
+
+        ]
+      ] []
     ]
-  ]
-  if (0.25 < fractionofday and fractionofday < 0.5) [; Day
-    ask patches with [46 > pcolor and pcolor > 41] [
-      let absoluteposition (( max-pxcor - pxcor) / ( max-pxcor - min-pxcor))
-      if (absoluteposition < fractionofday * 5) [
-      set pcolor (pcolor + 45) / 2]
-    ]
-  ]
-  if (0.50 < fractionofday and fractionofday < 0.75) [; Sunset
-    ask patches with [46 > pcolor and pcolor > 41] [
-      let absoluteposition (( max-pxcor - pxcor) / ( max-pxcor - min-pxcor))
-      if (absoluteposition < (fractionofday - 0.5) * 5) [
-      set pcolor (pcolor + ((41 - pcolor) * (fractionofday - 0.5)))]
-    ]
-  ]
-  if (0.75 < fractionofday and fractionofday < 1) [; Night
-    ask patches with [46 > pcolor and pcolor > 41] [
-      let absoluteposition (( max-pxcor - pxcor) / ( max-pxcor - min-pxcor))
-      if (absoluteposition < fractionofday * 5) [
-      set pcolor (pcolor + 41) / 2]
+  ][
+      ask patches [
+      carefully [
+        let pcolorr (item 0 pcolor)
+        let pcolorg (item 1 pcolor)
+        let pcolorb (item 2 pcolor)
+        if( abs(pcolorr - pcolorg) < 1 and pcolorb = 0) [
+          set pcolor gray]
+      ][]
     ]
   ]
 end
+
+to patch-anti-aliasing ;PNO
+  ask patches [
+    carefully [
+      let pcolorr (item 0 pcolor)
+      let pcolorg (item 1 pcolor)
+      let pcolorb (item 2 pcolor)
+      if(abs(pcolorr - pcolorg) < 1 and pcolorb = 0) [
+        if(pxcor != min-pxcor)[
+        ]
+      ]
+    ] []
+  ]
+end
+
 
 to year-counter ;MNM
   set age-counter (age-counter + 1)
@@ -833,6 +865,7 @@ end
 ; |-------|--------------------------------------------
 ; |<JOD>  | Jake O´Donnell
 ; |<SÄR>  | Julian Wijkström
+; |<PNO>  | Petar Novkovic
 ; |<OEA>  | Oskar Erik Adolfsson
 ; |<CVLA> | Chippen Vlahija
 ; |<AAR>  | Ahmed Abdulkader
@@ -1237,6 +1270,17 @@ maxDangerTimer
 1
 NIL
 VERTICAL
+
+SWITCH
+459
+572
+652
+605
+visual-day-night
+visual-day-night
+0
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?
