@@ -59,6 +59,7 @@ to go
   if count zombies > 500 [stop]
   if not any? humans [stop]
 end
+
 ; **************************
 
 ; ******************* COMMON FUNCTIONS PART ********
@@ -534,7 +535,6 @@ to get-home
       lt random 100
     ]
   ]
-
 end
 ; end human agents procedures/reporters -------------
 
@@ -599,18 +599,12 @@ to move-zombies[State]
           face cor
           forward zombie-speed-min
         ][
-          ifelse(prevTarget = 1) [
-          facexy target-X target-Y
-          if(([xcor] of self = target-X or [ycor] of self = target-Y))[
-            set prevTarget 0
-          ]
-        ][
           right random 45
           left random 45
-          ]
-          forward zombie-speed-min
+        ]
+        forward zombie-speed-min
 
-      ]]
+      ]
       show-energy
       alert
       release-zombie
@@ -618,6 +612,7 @@ to move-zombies[State]
       set-speed
     ]
   ]
+
 end
 
 ;JOD
@@ -725,7 +720,7 @@ to set-speed
   ]
 
   if(inDanger = 1) [
-    -(1 / 6) *
+    ;-(1 / 6) *
   ]
 
   ifelse(target != nobody and inDanger = 0) [
@@ -796,13 +791,10 @@ to live-zombies
 
   ask corpses[show-energy]
 
-  ask zombies[
-    carefully[
-      set energy floor( energy * 10 ) / 10
-    ][]
-  ]
-  ; <3-digit initial of programmer for each subfunction of the agent>
+  ask zombies[carefully[set energy floor( energy * 10 ) / 10][]]
 end
+
+; <3-digit initial of programmer for each subfunction of the agent>
 ; end zombie agents main function -------------------
 ; end setup zombie agents ----------------------------
 ; end zombie agents procedures/reporters -------------
@@ -961,7 +953,7 @@ initial-number-zombies
 initial-number-zombies
 0
 50
-9.0
+43.0
 1
 1
 NIL
@@ -1025,7 +1017,7 @@ SWITCH
 134
 Show-energy?
 Show-energy?
-1
+0
 1
 -1000
 
@@ -1239,7 +1231,7 @@ SWITCH
 361
 visual-day-night
 visual-day-night
-1
+0
 1
 -1000
 
@@ -1252,7 +1244,7 @@ patch-anti-aliasing
 patch-anti-aliasing
 0
 16
-0.0
+8.0
 1
 1
 NIL
@@ -1621,7 +1613,7 @@ Polygon -1184463 true false 152 140 155 172 158 201 147 231 102 253 133 212 150 
 Polygon -1184463 true false 157 125 197 174 188 182 154 138 158 124
 Polygon -1184463 true false 154 226 195 264 189 270 206 274 220 248 196 247 164 216 153 220 153 227
 @#$#@#$#@
-NetLogo 6.0.4
+NetLogo 6.1.0-RC2
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
