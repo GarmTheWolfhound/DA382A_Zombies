@@ -631,7 +631,6 @@ to alert
   if(((hum / zom) >= 3)) [
     set inDanger 1
     set dangerTimer 0
-
     ;Sparar koordinat för närmaste människa
     if(target != nobody) [
     set target-X [xcor] of target
@@ -643,7 +642,7 @@ to alert
 
     ;Alternativ 1, om det finns zombies att hjälpa fråga dem om hjälp, jagar den ingen hjälper den direkt, har den ett target kollar den distansen samt om din fart räcker till för att fortsätta jaga
     if(((hum / zomVisionRadius) < 3)) [ ; går att jaga människor
-                                       ;Den här koden låter oss inte hitta ett annat target om det behövs
+                                        ;Den här koden låter oss inte hitta ett annat target om det behövs
       if(helpingZombie != nobody)[
         face helpingZombie
         ask helpingZombie [
@@ -709,7 +708,12 @@ to set-speed
     set eatTimer eatTimer - 1
     forward 0
   ]
-  ifelse(target != nobody ) [
+  ;
+  if(inDanger = 1) [
+    -(1 / 6) *
+  ]
+
+  ifelse(target != nobody and inDanger = 0) [
     if(eatTimer = 0) [
       if energy > 100 [
         forward zombie-speed-max
@@ -905,7 +909,7 @@ initial-number-humans
 initial-number-humans
 0
 50
-30.0
+39.0
 1
 1
 NIL
@@ -920,7 +924,7 @@ initial-number-zombies
 initial-number-zombies
 0
 50
-7.0
+9.0
 1
 1
 NIL
@@ -935,7 +939,7 @@ zombies-energy-gain
 zombies-energy-gain
 0
 100
-20.0
+50.0
 1
 1
 NIL
@@ -1052,7 +1056,7 @@ maximumNrOfChildren
 maximumNrOfChildren
 0
 15
-10.0
+5.0
 1
 1
 NIL
