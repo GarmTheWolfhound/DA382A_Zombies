@@ -683,7 +683,7 @@ to alert
 
   ;OEA
   ;JOD
-  if((dangerTimer > 0) and (dangerTimer <= maxDangerTimer))[ ;låter Zombies jaga i grupp
+;  if((dangerTimer > 0) and (dangerTimer <= maxDangerTimer))[ ;låter Zombies jaga i grupp
     let humanInVision count humans in-radius vision-radius
 
     ifelse(humanInVision = 0)[
@@ -691,7 +691,7 @@ to alert
       facexy target-X target-Y
       ask other zombies in-radius vision-radius[
         if(humanInVision = 0)[
-          face myself
+          facexy target-X target-Y
           if Show-Zombie-comms [set pcolor cyan - 2];Mörkare
         ]
       ]
@@ -1069,7 +1069,7 @@ SWITCH
 134
 Show-energy?
 Show-energy?
-0
+1
 1
 -1000
 
