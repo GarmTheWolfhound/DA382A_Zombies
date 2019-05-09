@@ -25,7 +25,7 @@ breed [ humans human ]
 
 ; ************* AGENT-SPECIFIC VARIABLES *********
 turtles-own []
-zombies-own [energy target speedcoefficient eatTimer myGroup inDanger dangerTimer target-X target-Y]
+zombies-own [energy target prevTarget speedcoefficient eatTimer myGroup inDanger dangerTimer target-X target-Y]
 humans-own [latest-birth age parents nrOfChildren HState my-group]
 
 ; ***************************
@@ -75,7 +75,7 @@ to set-night-day  ;JOD & MNM & PNO
     ask patches with [49 > pcolor and pcolor > 41] [set pcolor ((pcolor + 41) / 2)]
   ]
   if (timeOfDay = "day")[
-          ask patches with [49 > pcolor and pcolor > 41] [set pcolor ((pcolor + 45) / 2)]
+    ask patches with [49 > pcolor and pcolor > 41] [set pcolor ((pcolor + 45) / 2)]
   ]
 end
 
@@ -123,9 +123,9 @@ to setup-humans ;MNM & AKB & AJA
     ;set size 2  ; easier to see
     setxy random-xcor random-ycor
   ]
-    ask humans with [age < 2 * reproduction-age][set size 1]
-    ask humans with [age >= 2 * reproduction-age and age < 5 * reproduction-age][set size 1.5]
-    ask humans with [age >= 5 * reproduction-age ][set size 2]
+  ask humans with [age < 2 * reproduction-age][set size 1]
+  ask humans with [age >= 2 * reproduction-age and age < 5 * reproduction-age][set size 1.5]
+  ask humans with [age >= 5 * reproduction-age ][set size 2]
 end
 ; end setup human agents ----------------------------
 
@@ -186,10 +186,10 @@ to reproduce-humans ;MNM
 end
 
 to-report family[maleP femaleP maleID femaleID] ;MNM & AKB
-;  show "MALE"
-;  show maleP
-;  show "FEMALE"
-;  show femaleP
+                                                ;  show "MALE"
+                                                ;  show maleP
+                                                ;  show "FEMALE"
+                                                ;  show femaleP
   if (item 0 maleP = -1 and item 1 maleP = -1) or (item 0 femaleP = -1 and item 1 femaleP = -1) [
     ;show "initial humans, breed"
     report 1 ;Initial humans, allowed to breed
@@ -298,7 +298,7 @@ to change-state ; MNM & DAB
         set HState "Flee"
         ;Flee2(zombsInArea(who))
         Flee(zombInArea(who))
-      ] [ifelse humanInArea(who) != nobody [
+        ] [ifelse humanInArea(who) != nobody [
           set HState "Group"
           Group(humanInArea(who))
         ] [Wander]
@@ -322,7 +322,7 @@ to change-state ; MNM & DAB
           ;Flee2(zombsInArea(who))
           Flee(zombInArea(who))
 
-        ] [ifelse humanInArea(who) != nobody [
+          ] [ifelse humanInArea(who) != nobody [
             Group(humanInArea(who))
 
         ][set HState "Wander" Wander]]
@@ -336,9 +336,9 @@ to change-state ; MNM & DAB
 end
 
 to Group [person] ; MNM & DAB
-;  set heading towards person
-;  right random 5
-;  left random 5
+                  ;  set heading towards person
+                  ;  right random 5
+                  ;  left random 5
   group-me
   if groupSpotAvailiable(my-group) != 1[  ;; Go "home"
     get-home
@@ -346,7 +346,7 @@ to Group [person] ; MNM & DAB
   forward 1
 end
 to Flee [zomb] ; MNM & DAB
-  ;run away from zombie
+               ;run away from zombie
   set heading towards zomb
   ;right 180
   right 160 + random 20
@@ -483,9 +483,9 @@ to get-home
   if turtle person != nobody[
     face turtle person
     ask turtle person[
-    rt random 100
-    lt random 100
-  ]
+      rt random 100
+      lt random 100
+    ]
   ]
 
 end
@@ -507,8 +507,7 @@ to setup-zombies
     setxy random-xcor random-ycor
     ;Används för jakt grupper
     set dangerTimer maxDangerTimer ;Ser till att ingen grupp bildas vid start
-    set target-X 0
-    set target-Y 0
+    set prevTarget 0
   ]
 end
 
@@ -549,14 +548,20 @@ to move-zombies[State]
       if(target != nobody and inDanger != 1) [
         face target
       ]
-      if(target = nobody) [
-        right random 45
-        left random 45
 
+      if(target = nobody) [
+        ifelse(prevTarget = 1) [
+          facexy target-X target-Y
+          if(([xcor] of self = target-X and [ycor] of self = target-Y))[
+            set prevTarget 0
+          ]
+        ][
+          right random 45
+          left random 45
+        ]
         if energy < 1 [
           forward zombie-speed-min
         ]
-
       ]
       show-energy
       alert
@@ -600,7 +605,7 @@ to alert
     let helpingZombie min-one-of other zombies in-radius vision-radius [distance myself]
 
     if(((hum / zomVisionRadius) < 3)) [ ; går att jaga människor
-      ;Den här koden låter oss inte hitta ett annat target om det behövs
+                                        ;Den här koden låter oss inte hitta ett annat target om det behövs
       if(helpingZombie != nobody)[
         face helpingZombie
         ask helpingZombie [
@@ -637,29 +642,38 @@ to alert
 
   ;OEA
   if((dangerTimer > 0) and (dangerTimer <= maxDangerTimer))[ ;låter Zombies jaga i grupp
-    if Show-Zombie-comms [set pcolor cyan - 2]
+    if Show-Zombie-comms [set pcolor cyan - 2];Mörkare
 
     ifelse(target = nobody)[
-      facexy target-X target-Y
+      set prevTarget 1
+      ;facexy target-X target-Y
+
       ask other zombies in-radius vision-radius[
         face myself
       ]
     ][
+      ;zombie som var i faras target
       face target
-      ask other zombies in-radius vision-radius[
-        face myself
 
-;        Det här orsakar en crash
-;        ifelse([distance myself] of self > [distance [target] of myself] of self)[
-;          set heading towards [target] of myself
-;        ][
-;          set heading towards myself
-;        ]
+      ask other zombies in-radius vision-radius[
+        ;Det här orsakar en crash
+        if((target != nobody) or (target = [target] of myself)) [
+          ifelse(([distance myself] of self) > (([distance myself]) of target))[
+            face [target] of myself
+          ][
+            face myself
+          ]
+        ]
       ]
     ]
-    ask other zombies in-radius vision-radius[if Show-Zombie-comms [set pcolor cyan + 2]]
 
-    if(target = nobody and ([xcor] of self = target-X and [ycor] of self = target-Y))[set dangerTimer maxDangerTimer];Bryter upp gruppen om mål patch nås och det inte finns någon människa
+    ask other zombies in-radius vision-radius[
+      if Show-Zombie-comms [set pcolor cyan + 2] ;ljusare
+    ]
+
+    ; if((count humans in-radius vision-radius) = 0)
+
+    ;Bryter upp gruppen om mål patch nås och det inte finns någon människa
   ]
 
 end
@@ -710,6 +724,8 @@ to eat-human
             set size 3
             set energy energy-start-zombies
             set eatTimer eatingTime + 1
+            set dangerTimer maxDangerTimer ;Ser till att ingen grupp bildas vid start
+            set prevTarget 0
           ]
           set eatTimer eatingTime + 1
 
@@ -975,7 +991,7 @@ energy-start-zombies
 energy-start-zombies
 0
 200
-80.0
+100.0
 1
 1
 NIL
@@ -1046,7 +1062,7 @@ NIL
 T
 OBSERVER
 NIL
-5
+1
 NIL
 NIL
 1
@@ -1063,7 +1079,7 @@ T
 T
 OBSERVER
 NIL
-G
+2
 NIL
 NIL
 0
@@ -1107,7 +1123,7 @@ zombie-speed-min
 zombie-speed-min
 0
 1
-0.5
+0.52
 0.01
 1
 NIL
@@ -1170,7 +1186,7 @@ NIL
 T
 OBSERVER
 NIL
-F
+3
 NIL
 NIL
 1
