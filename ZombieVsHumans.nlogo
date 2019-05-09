@@ -37,8 +37,8 @@ to setup
   clear-all
   setup-humans
   setup-zombies
-  ; set the bakground to yellow
-  ask patches [set pcolor grey]
+  ; set the bakground to yellow for graphical day-night
+  ask patches [set pcolor yellow]
   reset-ticks
 end
 ; **************************
@@ -61,23 +61,68 @@ end
 
 ; ******************* COMMON FUNCTIONS PART ********
 ;Functions shared between zombies and humans
-to set-night-day  ;JOD & MNM & PNO
+to set-night-day  ;JOD & MNM
   let counter ticks mod ticks-per-day-night
   if (counter < floor((ticks-per-day-night / 2))) [
-
     set timeOfDay "day"
   ]
   if (counter > floor((ticks-per-day-night / 2))+ 1) [
-
     set timeOfDay "night"
   ]
-  if (timeOfDay = "night")[
-    ask patches with [49 > pcolor and pcolor > 41] [set pcolor ((pcolor + 41) / 2)]
+  visual-day-night-m
+end
+
+to visual-day-night-m ;PNO
+  ifelse (visual-day-night = true) [
+    let counter ticks mod ticks-per-day-night
+    let fractionofday counter / (ticks-per-day-night - 1)
+    ask patches with [shade-of? pcolor yellow] [
+        let absoluteposition (( max-pxcor - pxcor) / ( max-pxcor - min-pxcor))
+
+        if (0 < fractionofday and fractionofday < 0.25) [; Sunrise
+          if (absoluteposition < fractionofday * 5) [
+            set pcolor (pcolor + (4 / (ticks-per-day-night / 4)))
+          ]
+        ]
+        if (0.25 < fractionofday and fractionofday < 0.5) [; Day
+          set pcolor ((pcolor + 45) / 2)
+        ]
+        if (0.50 < fractionofday and fractionofday < 0.75) [; Sunset
+          if (absoluteposition < (fractionofday - 0.5) * 5) [
+            set pcolor (pcolor - (4 / (ticks-per-day-night / 4)))
+          ]
+        ]
+        if (0.75 < fractionofday and fractionofday < 1) [; Night
+          set pcolor ((pcolor + 41) / 2)
+        ]
+      ]
+  ] [
+    ask patches with [shade-of? pcolor yellow] [
+      set pcolor gray]
   ]
-  if (timeOfDay = "day")[
-    ask patches with [49 > pcolor and pcolor > 41] [set pcolor ((pcolor + 45) / 2)]
+
+  if patch-anti-aliasing > 0 [
+    repeat patch-anti-aliasing [patch-anti-aliasing-m]
   ]
 end
+
+to patch-anti-aliasing-m ;PNO
+  let xcoordinates max-pxcor + abs(min-pxcor)
+  let aliasing-counter min-pxcor + 1
+  repeat (xcoordinates - 2) [
+    ask patches with [pxcor = aliasing-counter] [
+      if(shade-of? yellow pcolor) [
+        let temppcolor (((sum [pcolor] of (neighbors with [shade-of? pcolor yellow])) + pcolor) / 9)
+        if (shade-of? temppcolor yellow) [
+          set pcolor temppcolor
+        ]
+      ]
+    ]
+    set aliasing-counter (aliasing-counter + 1)
+  ]
+  set aliasing-counter 0
+end
+
 
 to year-counter ;MNM
   set age-counter (age-counter + 1)
@@ -584,7 +629,8 @@ end
 ; OEA
 ; CVLA
 ; AAR
-;JOD
+; JOD
+; PNO
 to alert
   let hum count humans in-radius (vision-radius / 2)
   let zomVisionRadius count zombies in-radius (vision-radius / 2)
@@ -827,6 +873,7 @@ end
 ; |-------|--------------------------------------------
 ; |<JOD>  | Jake O´Donnell
 ; |<SÄR>  | Julian Wijkström
+; |<PNO>  | Petar Novkovic
 ; |<OEA>  | Oskar Erik Adolfsson
 ; |<CVLA> | Chippen Vlahija
 ; |<AAR>  | Ahmed Abdulkader
@@ -1232,6 +1279,32 @@ maxDangerTimer
 NIL
 VERTICAL
 
+SWITCH
+28
+328
+172
+361
+visual-day-night
+visual-day-night
+0
+1
+-1000
+
+SLIDER
+15
+365
+187
+398
+patch-anti-aliasing
+patch-anti-aliasing
+0
+16
+7.0
+1
+1
+NIL
+HORIZONTAL
+
 @#$#@#$#@
 ## WHAT IS IT?
 
@@ -1595,7 +1668,7 @@ Polygon -1184463 true false 152 140 155 172 158 201 147 231 102 253 133 212 150 
 Polygon -1184463 true false 157 125 197 174 188 182 154 138 158 124
 Polygon -1184463 true false 154 226 195 264 189 270 206 274 220 248 196 247 164 216 153 220 153 227
 @#$#@#$#@
-NetLogo 6.0.4
+NetLogo 6.1.0-RC2
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
