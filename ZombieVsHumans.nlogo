@@ -19,6 +19,7 @@ globals [age-counter timeofday]
 ; ************ BREEDS OF TURTLES *****************
 breed [ zombies zombie ]  ;
 breed [ humans human ]
+breed [ corpses corpse ]
 
 
 ; ****************************
@@ -27,6 +28,7 @@ breed [ humans human ]
 turtles-own []
 zombies-own [energy target prevTarget speedcoefficient eatTimer myGroup inDanger dangerTimer target-X target-Y]
 humans-own [latest-birth age parents nrOfChildren HState my-group]
+corpses-own [flesh]
 
 ; ***************************
 
@@ -593,9 +595,13 @@ to move-zombies[State]
       if(target != nobody and inDanger != 1) [
         face target
       ]
-
-      if(target = nobody) [
-        ifelse(prevTarget = 1) [
+      if (target = nobody) [
+        let cor min-one-of corpses in-radius vision-radius [distance myself]
+        ifelse (cor != nobody and (energy + (zombies-energy-gain / 4)) < 90) [
+          face cor
+          forward zombie-speed-min
+        ][
+          ifelse(prevTarget = 1) [
           facexy target-X target-Y
           if(([xcor] of self = target-X or [ycor] of self = target-Y))[
             set prevTarget 0
@@ -603,10 +609,10 @@ to move-zombies[State]
         ][
           right random 45
           left random 45
-        ]
-        forward zombie-speed-min
+          ]
+          forward zombie-speed-min
 
-      ]
+      ]]
       show-energy
       alert
       release-zombie
@@ -621,7 +627,10 @@ end
 ;JOD
 to show-energy
   ifelse show-energy?
-      [ set label energy ]
+      [
+        carefully[set label energy][]
+        carefully[set label flesh][]
+  ]
   [ set label "" ]
 end
 
@@ -728,9 +737,9 @@ end
 
 ;JOD
 to set-speed
-  if (eatTimer != 0) [
-    set eatTimer eatTimer - 1
-    forward 0
+  let cor min-one-of corpses in-radius 2 [distance myself]
+  if (cor != nobody) [
+    eat-corpse
   ]
   ifelse(target != nobody ) [
     if(eatTimer = 0) [
@@ -743,9 +752,7 @@ to set-speed
         let speed speedcoefficient * ln(energy + 1) + zombie-speed-min
         forward speed
         set energy energy - (speed / zombie-speed-max)
-        if energy < 0 [
-          set energy 0
-        ]
+        set energy max list 0 energy
       ]
     ]
   ][
@@ -760,23 +767,37 @@ to eat-human
   ask zombies [
     let hum one-of humans-here
     ask zombies-here [
-      if (eatTimer = 0) [
-        if(hum != nobody)[
-          hatch-zombies 1[
-            ask hum [die]
-            set size 3
-            set energy energy-start-zombies
-            set eatTimer eatingTime + 1
-            set dangerTimer maxDangerTimer ;Ser till att ingen grupp bildas vid start
-            set prevTarget 0
-          ]
-          set eatTimer eatingTime + 1
+      if(hum != nobody)[
+        hatch-corpses 1[
+          ask hum [die]
+          set size 3
+          set flesh zombies-energy-gain
+          show flesh
+        ]
+      ]
+    ]
+  ]
+end
 
-          set energy energy + zombies-energy-gain
-          if energy > 100 [
-            set energy 100
+to eat-corpse
+  ask zombies [
+    if( (energy + (zombies-energy-gain / 4)) < 90) [
+      let cor one-of corpses-here
+      if(cor != nobody)[
+        ask cor [
+          if (flesh > (zombies-energy-gain / 4)) [
+            set flesh (flesh - (zombies-energy-gain / 4))
+          ]
+          if (flesh <= (zombies-energy-gain / 4)) [
+            ask cor [die]
+            hatch-zombies 1[
+              set size 3
+              set energy energy-start-zombies
+            ]
           ]
         ]
+        set energy (energy + zombies-energy-gain / 4)
+        set energy min list 100 energy
       ]
     ]
   ]
@@ -843,8 +864,17 @@ end
 
 ; --zombie agents main function ----------------------
 to live-zombies
-  ask zombies[set dangerTimer dangerTimer + 1]
+  ask zombies[
+    set dangerTimer dangerTimer + 1]
   move-zombies(Tactics)
+
+  ask corpses[show-energy]
+
+  ask zombies[
+    carefully[
+      set energy floor( energy * 10 ) / 10
+    ][]
+  ]
   ; <3-digit initial of programmer for each subfunction of the agent>
 end
 ; end zombie agents main function -------------------
@@ -1152,7 +1182,7 @@ zombie-speed-max
 zombie-speed-max
 0
 1
-0.75
+0.5
 0.01
 1
 NIL
@@ -1244,7 +1274,7 @@ eatingTime
 eatingTime
 0
 10
-10.0
+0.0
 1
 1
 NIL
@@ -1257,7 +1287,7 @@ SWITCH
 254
 Show-Zombie-comms
 Show-Zombie-comms
-0
+1
 1
 -1000
 
@@ -1283,7 +1313,7 @@ SWITCH
 361
 visual-day-night
 visual-day-night
-0
+1
 1
 -1000
 
@@ -1296,7 +1326,7 @@ patch-anti-aliasing
 patch-anti-aliasing
 0
 16
-8.0
+0.0
 1
 1
 NIL
