@@ -758,14 +758,15 @@ to eat-human
     ]
   ]
 end
-
+; funktion för att kunna äta en corp(lik) med energi som äts upp på fyra tick. 
+; PNO,SÄR,NOA,JSN
 to eat-corpse
   ask zombies [
-    if( (energy + (zombies-energy-gain / 4)) < 90) [
+    if( (energy + (zombies-energy-gain / 4)) < 90) [  ; om zombies har en energinivå under 90 kan den äta   
       let cor one-of corpses-here
       if(cor != nobody)[
         ask cor [
-          if (flesh > (zombies-energy-gain / 4)) [
+          if (flesh > (zombies-energy-gain / 4)) [ ; energin i corp mindre än zombiesenergi, ger den energin från corps som kan ätas fyra gånger
             set flesh (flesh - (zombies-energy-gain / 4))
           ]
           if (flesh <= (zombies-energy-gain / 4)) [
@@ -823,6 +824,7 @@ end
 ; |<CVLA> | Chippen Vlahija
 ; |<AAR>  | Ahmed Abdulkader
 ; |<NOA>  | Nasra Omar Ali
+; |<JSN>  | Jason Tan
 ; |----------------------------------------------------
 
 ; #################################################################################################################
