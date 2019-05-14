@@ -563,6 +563,7 @@ end
 ; end setup zombie agents ----------------------------
 
 ;JOD
+;SFL
 to move-zombies[State]
   ;State Step2 is used for first test. Zombies move in a random path with a 90
   ;rotation radius, 45 right 45 left. Speed is determined by owned energy.
@@ -702,7 +703,7 @@ to alert
 end
 
 ;JOD
-; JSN
+;JSN
 to release-zombie
   let hum count humans in-radius 1
   let zom count zombies in-radius 1
@@ -825,6 +826,7 @@ end
 ; |<AAR>  | Ahmed Abdulkader
 ; |<NOA>  | Nasra Omar Ali
 ; |<JSN>  | Jason Tan
+; |<SFL>  | Stefan Von Freytag-Loringhoven
 ; |----------------------------------------------------
 
 ; #################################################################################################################
