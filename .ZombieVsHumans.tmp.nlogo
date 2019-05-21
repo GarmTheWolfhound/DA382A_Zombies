@@ -763,7 +763,7 @@ to move-zombies[State]
       ]
       ]
 
-      if (target = nobody) [
+      if (target = nobody ) [
         let cor min-one-of corpses in-radius vision-radius [distance myself]
         ifelse (cor != nobody and (energy + (zombies-energy-gain / 4)) < 90) [
           face cor
@@ -850,7 +850,8 @@ to alert
       ]
 
       if(zomVisionRadius = 1) [ ;Finns inte någon zombie som kan hjälpa
-        s
+        face (min-one-of humans [distance myself])
+        set heading heading - 180
         if Show-Zombie-comms [set pcolor green]
       ]
     ]
@@ -1054,7 +1055,7 @@ setup-age
 setup-age
 0
 100
-9.0
+60.0
 1
 1
 NIL
@@ -1084,7 +1085,7 @@ reproduction-age
 reproduction-age
 0
 100
-30.0
+18.0
 1
 1
 NIL
@@ -1099,7 +1100,7 @@ maximum-age
 maximum-age
 0
 100
-83.0
+85.0
 1
 1
 NIL
@@ -1144,7 +1145,7 @@ initial-number-zombies
 initial-number-zombies
 0
 50
-15.0
+10.0
 1
 1
 NIL
@@ -1208,7 +1209,7 @@ SWITCH
 134
 Show-energy?
 Show-energy?
-1
+0
 1
 -1000
 
@@ -1276,7 +1277,7 @@ maximumNrOfChildren
 maximumNrOfChildren
 0
 15
-7.0
+3.0
 1
 1
 NIL
@@ -1291,7 +1292,7 @@ zombie-speed-max
 zombie-speed-max
 0
 1
-0.75
+0.7
 0.01
 1
 NIL
@@ -1306,7 +1307,7 @@ zombie-speed-min
 zombie-speed-min
 0
 1
-0.25
+0.2
 0.01
 1
 NIL
@@ -1445,7 +1446,7 @@ maxDangerTimer
 maxDangerTimer
 1
 20
-7.0
+5.0
 1
 1
 NIL
@@ -1458,9 +1459,31 @@ SWITCH
 341
 Show-Zombie-comms
 Show-Zombie-comms
-0
+1
 1
 -1000
+
+MONITOR
+727
+657
+817
+702
+NIL
+count humans
+17
+1
+11
+
+MONITOR
+622
+644
+714
+689
+NIL
+count zombies
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
