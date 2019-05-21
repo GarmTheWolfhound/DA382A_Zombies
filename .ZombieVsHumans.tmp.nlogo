@@ -55,8 +55,8 @@ to go
   ;common functions and stop-expressions
   year-counter
   set-night-day
-  if count humans > 2000 [stop]
-  if count zombies > 2000 [stop]
+  if count humans > 500 [stop]
+  if count zombies > 500 [stop]
   if not any? humans [stop]
 end
 ; **************************
@@ -174,9 +174,9 @@ to setup-humans ;MNM & AKB & AJA
     ;set size 2  ; easier to see
     setxy random-xcor random-ycor
   ]
-  ask humans with [age < 2 * reproduction-age][set size 1]
-  ask humans with [age >= 2 * reproduction-age and age < 5 * reproduction-age][set size 1.5]
-  ask humans with [age >= 5 * reproduction-age ][set size 2]
+    ask humans with [age < 2 * reproduction-age][set size 1]
+    ask humans with [age >= 2 * reproduction-age and age < 5 * reproduction-age][set size 1.5]
+    ask humans with [age >= 5 * reproduction-age ][set size 2]
 end
 ; end setup human agents ----------------------------
 
@@ -186,7 +186,7 @@ to live-humans ; AKB
   ;move-humans
   change-state
   reproduce-humans
-  ;  hunt
+;  hunt
 end
 ; end human agents main function --------------------
 
@@ -241,10 +241,10 @@ to reproduce-humans ;MNM & AKB
 end
 
 to-report family[maleP femaleP maleID femaleID] ;MNM & AKB
-                                                ;  show "MALE"
-                                                ;  show maleP
-                                                ;  show "FEMALE"
-                                                ;  show femaleP
+;  show "MALE"
+;  show maleP
+;  show "FEMALE"
+;  show femaleP
   if (item 0 maleP = -1 and item 1 maleP = -1) or (item 0 femaleP = -1 and item 1 femaleP = -1) [
     ;show "initial humans, breed"
     report 1 ;Initial humans, allowed to breed
@@ -353,7 +353,7 @@ to change-state ; MNM & DAB & SCN
       ][
         ifelse HState = "Group"[
           Group
-        ][
+          ][
           ifelse Hstate = "Breed"[
             go-to-nearby-group
           ][]
@@ -427,13 +427,13 @@ end
 to change-group-state[state]
   foreach my-group[
     person -> if(turtle person != nobody)[
-      ask turtle person [set HState state]
+     ask turtle person [set HState state]
     ]
   ]
 end
 
 to Flee [zomb] ; MNM & DAB
-               ;run away from zombie
+  ;run away from zombie
   if zomb != nobody[
     set heading towards zomb
   ]
@@ -593,14 +593,14 @@ to Leader-state
               set g g + 1
               ][ifelse choice = "Breed"[
                 set b b + 1
-              ][;more states here
+                ][;more states here
+                ]
               ]
             ]
           ]
         ]
       ]
     ]
-  ]
   ifelse (f >= 2 and h = 0 and not hunting) [
     change-group-state("Flee")
     if (show-hums-coms) [
@@ -638,8 +638,8 @@ end
 ;SCN & BJZ
 to end-hunt
   foreach my-group [
-    person -> if (turtle person != nobody)[
-      ask turtle person [
+   person -> if (turtle person != nobody)[
+     ask turtle person [
         set hunting false
       ]
     ]
@@ -648,9 +648,9 @@ end
 ;SCN & BJZ
 to set-hunting-target [hunting-target]
   foreach my-group [
-    person -> if (turtle person != nobody)[
-      ask turtle person [
-        set target hunting-target
+   person -> if (turtle person != nobody)[
+     ask turtle person [
+       set target hunting-target
         set hunting true
       ]
     ]
@@ -664,7 +664,7 @@ to-report player-state
     set target-nullpointer false
   ][
     set target-nullpointer (([count zombies in-radius 2] of target ) < 2 )
-  ]
+]
   ifelse( confidence = 100 and (target-nullpointer))[
     report "Hunt"
     ][ ifelse confidence = 0[
@@ -672,7 +672,7 @@ to-report player-state
       ][ ifelse (color = pink and nrOfChildren < maximumNrOfChildren)[
         ;this is placeholder state extension that can be built upon
         report "Breed"
-        ][ ifelse true[
+      ][ ifelse true[
           report "Group"
         ][
           ;more states
@@ -726,6 +726,7 @@ end
 ; end setup zombie agents ----------------------------
 
 ;JOD
+;SFL
 to move-zombies[State]
   ;State Step2 is used for first test. Zombies move in a random path with a 90
   ;rotation radius, 45 right 45 left. Speed is determined by owned energy.
@@ -755,7 +756,13 @@ to move-zombies[State]
       set target min-one-of humans in-radius vision-radius [distance myself]
       if(target != nobody and inDanger != 1) [
         face target
+         ask zombies in-radius vision-radius [
+        if (target = nobody) [
+            face [target] of myself
+        ]
       ]
+      ]
+
       if (target = nobody) [
         let cor min-one-of corpses in-radius vision-radius [distance myself]
         ifelse (cor != nobody and (energy + (zombies-energy-gain / 4)) < 90) [
@@ -795,7 +802,7 @@ end
 ; PNO
 to alert
   let hum count humans in-radius vision-radius
-  let zomVisionRadius count zombies in-radius vision-radius
+  let zomVisionRadius count zombies in-radius (vision-radius / 2)
   let zom count zombies in-radius 1
 
   if(((hum / zom) < 3) and dangerTimer >= maxDangerTimer) [
@@ -824,12 +831,12 @@ to alert
               if(target != nobody)[
                 face target
               ]
-              if Show-Zombie-comms [set pcolor black]
+            if Show-Zombie-comms [set pcolor black]
             ]
           ][
-            if( != nobody) [
-              face [target] of zomToHelp
-              if Show-Zombie-comms [set pcolor orange]
+            if(target != nobody) [
+            face [target] of zomToHelp
+            if Show-Zombie-comms [set pcolor orange]
             ]
           ]
         ]
@@ -839,11 +846,11 @@ to alert
     if(((hum / zomVisionRadius) >= 3))[
       if(zomVisionRadius >= 2) [ ;Finns inte tillräckligt med zombies för att hjälpa
         face helpingZombie
-        if Show-Zombie-comms [set pcolor brown]
+         if Show-Zombie-comms [set pcolor brown]
       ]
 
       if(zomVisionRadius = 1) [ ;Finns inte någon zombie som kan hjälpa
-        set heading heading - 180
+        s
         if Show-Zombie-comms [set pcolor green]
       ]
     ]
@@ -868,7 +875,7 @@ to alert
 end
 
 ;JOD
-; JSN
+;JSN
 to release-zombie
   let hum count humans in-radius 2
   let zom count zombies in-radius 2
@@ -888,7 +895,7 @@ to set-speed
     eat-corpse
   ]
 
-  ifelse(inDanger = 1 and target != nobody and eatTimer = 0) [
+  ifelse(inDanger = 1 and target != nobody) [
     let fleeCoefficient (-(1 / 6) * ([distance min-one-of humans in-radius vision-radius[distance myself]] of self) + (4 / 3))
     set fleeCoefficient min list 1 fleeCoefficient
     set energy energy - (fleeCoefficient / zombie-speed-max)
@@ -937,23 +944,22 @@ to eat-human
   ]
 end
 ; funktion för att kunna äta en corp(lik) med energi som äts upp på fyra tick.
-; PNO,SÄR,NOA
+; PNO,SÄR,NOA,JSN
 to eat-corpse
   ask zombies [
-    if( (energy + (zombies-energy-gain / 4)) < 90 or (energy = min ([energy] of zombies in-radius vision-radius))) [  ; om zombies har en energinivå under 90 kan den äta
-      let cor one-of corpses in-radius 1
-
+    if((energy + (zombies-energy-gain / 4)) < 90 and (energy = min ([energy] of zombies in-radius vision-radius)))[  ; om zombies har en energinivå under 90 kan den äta
+      let cor one-of corpses-here
       if(cor != nobody)[
         ask cor [
           if (flesh > (zombies-energy-gain / 4)) [ ; energin i corp mindre än zombiesenergi, ger den energin från corps som kan ätas fyra gånger
             set flesh (flesh - (zombies-energy-gain / 4))
           ]
           if (flesh <= (zombies-energy-gain / 4)) [
-            hatch-zombies 1[
+              hatch-zombies 1[
               ask cor [die]
-              set size 3
+                set size 3
               set shape "zombie"
-              set energy energy-start-zombies
+                set energy energy-start-zombies
             ]
           ]
         ]
@@ -1003,6 +1009,10 @@ end
 ; |<SÄR>  | Julian Wijkström
 ; |<OEA>  | Oskar Erik Adolfsson
 ; |<CVLA> | Chippen Vlahija
+; |<AAR>  | Ahmed Abdulkader
+; |<NOA>  | Nasra Omar Ali
+; |<JSN>  | Jason Tan
+; |<SFL>  | Stefan Von Freytag-Loringhoven
 ; |<AAR   | Ahmed Abdulkader
 ; |----------------------------------------------------
 
@@ -1044,7 +1054,7 @@ setup-age
 setup-age
 0
 100
-55.0
+9.0
 1
 1
 NIL
@@ -1074,7 +1084,7 @@ reproduction-age
 reproduction-age
 0
 100
-5.0
+30.0
 1
 1
 NIL
@@ -1198,7 +1208,7 @@ SWITCH
 134
 Show-energy?
 Show-energy?
-0
+1
 1
 -1000
 
@@ -1266,7 +1276,7 @@ maximumNrOfChildren
 maximumNrOfChildren
 0
 15
-11.0
+7.0
 1
 1
 NIL
@@ -1281,7 +1291,7 @@ zombie-speed-max
 zombie-speed-max
 0
 1
-0.8
+0.75
 0.01
 1
 NIL
@@ -1296,7 +1306,7 @@ zombie-speed-min
 zombie-speed-min
 0
 1
-0.4
+0.25
 0.01
 1
 NIL
@@ -1435,7 +1445,7 @@ maxDangerTimer
 maxDangerTimer
 1
 20
-1.0
+7.0
 1
 1
 NIL
@@ -1448,7 +1458,7 @@ SWITCH
 341
 Show-Zombie-comms
 Show-Zombie-comms
-1
+0
 1
 -1000
 
