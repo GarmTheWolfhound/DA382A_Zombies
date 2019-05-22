@@ -896,13 +896,14 @@ to set-speed
   ]
 
   ifelse(inDanger = 1 and target != nobody) [
+    if(count humans in-radius vision-radius > 0)[
     let fleeCoefficient (-(1 / 6) * ([distance min-one-of humans in-radius vision-radius[distance myself]] of self) + (4 / 3))
-    if(fleeCoefficient != nobody)[
     set fleeCoefficient min list 1 fleeCoefficient
     set energy energy - (fleeCoefficient / zombie-speed-max)
     set energy max list 0 energy
     forward fleeCoefficient * speed
     ]
+
   ] [
     forward zombie-speed-min
   ]
@@ -950,7 +951,7 @@ end
 to eat-corpse
   ask zombies [
     if((energy + (zombies-energy-gain / 4)) < 90 and (energy = min ([energy] of zombies in-radius vision-radius)))[  ; om zombies har en energinivå under 90 kan den äta
-      let cor one-of corpses-here
+      let cor one-of corpses-her
 
       if(cor != nobody)[
         ask cor [
@@ -1087,7 +1088,7 @@ reproduction-age
 reproduction-age
 0
 100
-18.0
+12.0
 1
 1
 NIL
@@ -1147,7 +1148,7 @@ initial-number-zombies
 initial-number-zombies
 0
 50
-20.0
+10.0
 1
 1
 NIL
@@ -1279,7 +1280,7 @@ maximumNrOfChildren
 maximumNrOfChildren
 0
 15
-3.0
+5.0
 1
 1
 NIL
@@ -1309,7 +1310,7 @@ zombie-speed-min
 zombie-speed-min
 0
 1
-0.2
+0.3
 0.01
 1
 NIL
@@ -1461,7 +1462,7 @@ SWITCH
 341
 Show-Zombie-comms
 Show-Zombie-comms
-0
+1
 1
 -1000
 
