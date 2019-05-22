@@ -764,16 +764,15 @@ to move-zombies[State]
 
       if (inDanger = 0 or energy < 50) [
         let cor min-one-of corpses in-radius vision-radius [distance myself]
-
-        ask zombies in-radius vision-radius [
-        ifelse (cor != nobody and (energy = min ([energy] of zombies in-radius vision-radius))) [
+        ifelse (cor != nobody and (energy + (zombies-energy-gain / 4)) < 90) [
           face cor
+          forward zombie-speed-min
         ][
           right random 45
           left random 45
         ]
+        forward zombie-speed-min
 
-        ]
       ]
       show-energy
       alert
@@ -927,8 +926,6 @@ to set-speed
   ][
     forward zombie-speed-min
   ]
-
-
 end
 
 ;JOD
@@ -952,7 +949,7 @@ end
 ; PNO,SÄR,NOA,JSN
 to eat-corpse
   ask zombies [
-   if((energy + (zombies-energy-gain / 4)) < energy-start-zombies  and (energy = min ([energy] of zombies in-radius vision-radius)))[  ; om zombies har en energinivå under 90 kan den äta
+    if((energy + (zombies-energy-gain / 4)) < 90 and (energy = min ([energy] of zombies in-radius vision-radius)))[  ; om zombies har en energinivå under 90 kan den äta
       let cor one-of corpses in-radius 1
 
       if(cor != nobody)[
@@ -1150,7 +1147,7 @@ initial-number-zombies
 initial-number-zombies
 0
 50
-15.0
+10.0
 1
 1
 NIL
@@ -1464,15 +1461,15 @@ SWITCH
 341
 Show-Zombie-comms
 Show-Zombie-comms
-0
+1
 1
 -1000
 
 MONITOR
 727
-657
+645
 817
-702
+690
 NIL
 count humans
 17
