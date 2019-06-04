@@ -726,6 +726,7 @@ end
 
 ;JOD
 ;SFL
+;JSN
 to move-zombies[State]
   ;State Step2 is used for first test. Zombies move in a random path with a 90
   ;rotation radius, 45 right 45 left. Speed is determined by owned energy.
@@ -851,6 +852,7 @@ end
 ; AAR
 ; JOD
 ; PNO
+; JSN
 to alert
   let hum count humans in-radius vision-radius
   let zomVisionRadius count zombies in-radius (vision-radius / 2)
