@@ -630,6 +630,7 @@ end
 ; AAR
 ; JOD
 ; PNO
+; FJI
 to alert
   let hum count humans in-radius (vision-radius / 2)
   let zomVisionRadius count zombies in-radius vision-radius
@@ -825,6 +826,7 @@ end
 ; |<AAR>  | Ahmed Abdulkader
 ; |<NOA>  | Nasra Omar Ali
 ; |<JSN>  | Jason Tan
+; |<FJI>  | Ferit Jasarovski 
 ; |----------------------------------------------------
 
 ; #################################################################################################################
