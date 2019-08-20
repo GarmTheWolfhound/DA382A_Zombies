@@ -60,6 +60,9 @@ to go
 end
 ; **************************
 
+
+
+
 ; ******************* COMMON FUNCTIONS PART ********
 ;Functions shared between zombies and humans
 
@@ -646,7 +649,17 @@ to end-hunt
 end
 ;SCN & BJZ
 to set-hunting-target [hunting-target]
-  foreach my-group [
+let vote 0
+let amount count humans in-radius vision-radius
+ask humans in-radius vision-radius[
+  ifelse(confidence > 2)[
+    set vote vote + 1
+  ][
+    set vote vote + 0
+  ]
+]
+if(((vote / amount) >= (amount / 2)))[
+     foreach my-group [
     person -> if (turtle person != nobody)[
       ask turtle person [
         set target hunting-target
@@ -654,6 +667,9 @@ to set-hunting-target [hunting-target]
       ]
     ]
   ]
+]
+
+
 end
 ;SCN & BJZ
 to-report player-state
@@ -779,16 +795,16 @@ to move-zombies[State]
         face cor
       ][
         if(following != 1)[
-        right random 45
-        left random 45
-        if(cor != nobody)[
-          ask n-of (min list 3 count zombies in-radius vision-radius) zombies in-radius vision-radius [
-            if (cor != nobody and (energy = min ([energy] of zombies in-radius vision-radius)) and self != myself) [
-              face cor
+          right random 45
+          left random 45
+          if(cor != nobody)[
+            ask n-of (min list 3 count zombies in-radius vision-radius) zombies in-radius vision-radius [
+              if (cor != nobody and (energy = min ([energy] of zombies in-radius vision-radius)) and self != myself) [
+                face cor
+              ]
             ]
           ]
         ]
-      ]
       ]
       ;Alternating offers protocol
 
@@ -796,14 +812,14 @@ to move-zombies[State]
         let diff ([energy] of myself - energy)
 
         if(following = 0 and diff >= 10 and target = nobody) [
-            ask myself [
-              set energy int (energy - (diff / 2))
-            ]
-            set energy int (energy + (diff / 2))
+          ask myself [
+            set energy int (energy - (diff / 2))
+          ]
+          set energy int (energy + (diff / 2))
 
-            set follower myself
-            set following 1
-            set ticksToFollow ticksToFollow + (diff / 2 )
+          set follower myself
+          set following 1
+          set ticksToFollow ticksToFollow + (diff / 2 )
         ]
       ]
 
